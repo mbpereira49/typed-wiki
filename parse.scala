@@ -18,7 +18,7 @@ object Line:
 
 sealed trait Block
 object Block:
-  case class P(l: Seq[Line]) extends Block // paragraph
+  case class P(ls: Seq[Line]) extends Block // paragraph
   case class Hdr(l: Line, h: Header) extends Block // header
 
 sealed trait Body
@@ -34,14 +34,13 @@ val italics = P.string("*").as(Format.Italics)
 val word: P[String] = vchar.rep.string
 val words: P[String] = 
     word.repSep(wsp)
-        .surroundedBy(wsp0)
         .map(l => l.toList.mkString(" "))
 
 val formatted: P[Text] =
   (bold *> words <* bold).map(s => Text.Formatted(s, Format.Bold))
 val plain: P[Text] = words.map(s => Text.Plain(s))
 val text: P[Text] = formatted | plain
-val line: P[Line] = text.repSep(wsp).surroundedBy(wsp0).map(l => Line.Line_(l.toList))
+val line: P[Line] = text.repSep(wsp).map(l => Line.Line_(l.toList))
 val paragraph: P[Block] = line.repSep(sp ~ sp ~ lf).map(l => Block.P(l.toList))
 
 val header_marker: P[Header] = (
@@ -55,8 +54,3 @@ val header : P[Block] = ((header_marker <* wsp0) ~ line).map((h, l) => Block.Hdr
 val block : P[Block] = header | paragraph
 
 val body : Parser0[Body] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(l => Body.Blocks(l))
-
-
-//val line2: P[Block] = (header_marker ~ words).backtrack.map(x => Block.Hdr(x._2, x._1)) | words.map(x => Block.P(x))
-
-//val body: P[Expr] = line2.surroundedBy(lf0).rep.map(l => Expr.Lines(l.toList))

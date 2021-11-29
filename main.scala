@@ -1,21 +1,13 @@
-import scala.io.Source
-import java.io._
+val filename = "test2"
 
-val fileIn = "test.subst"
-val fileOut = "test.html" 
+val dir = "test"
+val fileIn = s"$dir/$filename.subst"
+val fileOut = s"$dir/out/$filename.html" 
 
 @main def hello = 
-  val bufferedSource = Source.fromFile(fileIn)
-  val fileContents = bufferedSource.getLines mkString "\n"
-  bufferedSource.close
-  val parsed = body.parse(fileContents)
-  parsed match {
-      case Right(x) => 
-        val e = x._2
-        /*val out = generate(e)
-        val file = new File(fileOut)
-        val bw = new BufferedWriter(new FileWriter(file))
-        try bw.write(out) finally bw.close()*/
-        println(e)
-      case Left(x) => ()
-  }
+    val fileContents = read_markdown(fileIn)
+    val parsed = body.parse(fileContents)
+    //write(parsed, fileOut)
+
+    val p = formatted.parse("**hey**")
+    println(p)
