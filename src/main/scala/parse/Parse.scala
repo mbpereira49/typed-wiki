@@ -3,35 +3,14 @@ import cats.parse.Rfc5234.{alpha, sp, vchar, wsp, lf}
 import cats.parse.{Parser => P, Parser0}
 import cats.parse.Parser.not
 
-enum Header:
-  case H1, H2, H3
-enum Format:
-  case Bold, Italics, Link
-
-sealed trait Text
-object Text:
-  case class Plain(s: String) extends Text
-  case class Formatted(s: Line, f: Format) extends Text
-
-sealed trait Line
-object Line:
-  case class Line_(l: Seq[Text]) extends Line
-
-sealed trait Block
-object Block:
-  case class P(ls: Seq[Line]) extends Block // paragraph
-  case class Hdr(l: Line, h: Header) extends Block // header
-
-sealed trait Body
-object Body:
-  case class Blocks(l: List[Block]) extends Body
-
 val lf0: Parser0[Unit] = lf.rep0.void 
 val wsp0: Parser0[Unit] = wsp.rep0.void 
 
 val special = P.charIn("*_()[]")
 val bold = P.string("*").as(Format.Bold)
 val italics = P.string("_").as(Format.Italics)
+
+val link = (alpha | P.charIn("/:_.%&=")).rep.string
 
 val wordWithout: P[Any] => P[String] = p => (not(p).with1 ~ vchar).rep.string
 val wordsWithout: P[Any] => P[String] = p => 
@@ -41,14 +20,23 @@ val wordsWithout: P[Any] => P[String] = p =>
 val normal_words = wordsWithout(special)
 
 val line: P[Line] = P.recursive[Line] { recurse =>
-    val formatted: P[Text] =
-        (bold *> recurse <* bold).map(s => Text.Formatted(s, Format.Bold))
-        | (italics *> recurse <* italics).map(s => Text.Formatted(s, Format.Italics))
+    val bold_line = (bold *> recurse <* bold).map(l => Text.Bold(l))
+    val italics_line = (italics *> recurse <* italics).map(l => Text.Italics(l))
+    val ref_line =
+      val leftParen = P.char('(')
+      val rightParen = P.char(')')
+      val leftBracket = P.char('[')
+      val rightBracket = P.char(']')
+      ((leftBracket *> recurse <* rightBracket) ~ (leftParen *> link <* rightParen)).map(
+        (line, link) => Text.Link(line, link)
+      )
+    val formatted: P[Text] = bold_line | italics_line | ref_line
 
     val plain: P[Text] = normal_words.map(s => Text.Plain(s))
+
     val text: P[Text] = formatted.backtrack | plain
 
-    text.repSep(wsp0).map(l => Line.Line_(l.toList))
+    text.repSep(wsp).map(l => Line.Line_(l.toList))
 }
 
 val paragraph: P[Block] = line.repSep(sp ~ sp ~ lf).map(l => Block.P(l.toList))

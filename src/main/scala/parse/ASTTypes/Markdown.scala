@@ -6,7 +6,9 @@ enum Format:
 sealed trait Text
 object Text:
   case class Plain(s: String) extends Text
-  case class Formatted(s: Line, f: Format) extends Text
+  case class Bold(l: Line) extends Text
+  case class Italics(l: Line) extends Text
+  case class Link(l: Line, ref: String) extends Text
 
 sealed trait Line
 object Line:

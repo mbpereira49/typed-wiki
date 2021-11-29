@@ -1,5 +1,7 @@
 def generate(b: Body): String = b match
-  case Body.Blocks(l) => l.map(generateBlock).reduce((x, y) => s"$x\n$y")
+  case Body.Blocks(l) => 
+    if l.isEmpty then ""
+    else l.map(generateBlock).reduce((x, y) => s"$x\n$y")
 
 def generateBlock(b : Block): String =
   b match {
@@ -18,17 +20,20 @@ def generateBlock(b : Block): String =
 
 def generateLine(l : Line): String = 
   l match
-    case Line.Line_(l) => l.map(generateText).mkString
+    case Line.Line_(l) => l.map(generateText).mkString(" ")
 
 def generateText(t: Text): String =
   t match {
       case Text.Plain(s) => s
-      case Text.Formatted(s, f) => 
-        val tag = f match {
-          case Format.Bold => "strong"
-          case Format.Italics => "em"
-          case _ => ""
-        }
-        s"<$tag>$s</$tag>"
+      case Text.Bold(l) =>
+        val l_gen = generateLine(l)
+        s"<strong>$l_gen</strong>"
+      case Text.Italics(l) =>
+        val l_gen = generateLine(l)
+        s"<em>$l_gen</em>"
+      case Text.Link(line, link) =>
+        val l_gen = generateLine(line)
+        s"<a href = $link>$l_gen</a>"
+
   }
   
