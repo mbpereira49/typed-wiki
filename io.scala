@@ -12,6 +12,7 @@ def write(parsed: Either[Parser.Error, Tuple2[String, Body]], fileOut: String): 
   parsed match {
       case Right(x) => 
         val body = x._2
+        //println(x)
         val out = generate(body)
         write_html(out, fileOut)
       case Left(x) => println(x)

@@ -18,7 +18,7 @@ def generateBlock(b : Block): String =
 
 def generateLine(l : Line): String = 
   l match
-    case Line.Line_(l) => l.map(generateText).mkString(" ")
+    case Line.Line_(l) => l.map(generateText).mkString
 
 def generateText(t: Text): String =
   t match {
