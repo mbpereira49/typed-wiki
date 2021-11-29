@@ -12,9 +12,10 @@ val fileOut = "test.html"
   parsed match {
       case Right(x) => 
         val e = x._2
-        val out = generate(e)
+        /*val out = generate(e)
         val file = new File(fileOut)
         val bw = new BufferedWriter(new FileWriter(file))
-        try bw.write(out) finally bw.close()
+        try bw.write(out) finally bw.close()*/
+        println(e)
       case Left(x) => ()
   }

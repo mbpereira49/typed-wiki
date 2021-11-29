@@ -1,33 +1,62 @@
 import cats.data.NonEmptyList
-import cats.parse.Rfc5234.{alpha, sp, vchar}
+import cats.parse.Rfc5234.{alpha, sp, vchar, wsp, lf}
 import cats.parse.{Parser => P, Parser0}
 
 enum Header:
   case H1, H2, H3
+enum Format:
+  case Bold, Italics, Link
+
+sealed trait Text
+object Text:
+  case class Plain(s: String) extends Text
+  case class Formatted(s: String, f: Format) extends Text
 
 sealed trait Line
 object Line:
-  case class P(s: String) extends Line // paragraph
-  case class Hdr(h : Header, s: String) extends Line // header
+  case class Line_(l: Seq[Text]) extends Line
 
-sealed trait Expr
-object Expr:
-  case class Lines(l: List[Line]) extends Expr
+sealed trait Block
+object Block:
+  case class P(l: Seq[Line]) extends Block // paragraph
+  case class Hdr(l: Line, h: Header) extends Block // header
 
-val newline: P[Unit] = P.char('\n').void
-val newline0: Parser0[Unit] = newline.rep0.void
-val whitespace: P[Unit] = P.charIn(" \t").void
-val whitespaces0: Parser0[Unit] = whitespace.rep0.void
+sealed trait Body
+object Body:
+  case class Blocks(l: List[Block]) extends Body
+
+val lf0: Parser0[Unit] = lf.rep0.void 
+val wsp0: Parser0[Unit] = wsp.rep0.void 
+
+val bold = P.string("**").as(Format.Bold)
+val italics = P.string("*").as(Format.Italics)
 
 val word: P[String] = vchar.rep.string
-val text: P[String] = (word | whitespace).rep.string
+val words: P[String] = 
+    word.repSep(wsp)
+        .surroundedBy(wsp0)
+        .map(l => l.toList.mkString(" "))
 
-val header: P[Header] = (
-        P.string("###").as(Header.H3) 
+val formatted: P[Text] =
+  (bold *> words <* bold).map(s => Text.Formatted(s, Format.Bold))
+val plain: P[Text] = words.map(s => Text.Plain(s))
+val text: P[Text] = formatted | plain
+val line: P[Line] = text.repSep(wsp).surroundedBy(wsp0).map(l => Line.Line_(l.toList))
+val paragraph: P[Block] = line.repSep(sp ~ sp ~ lf).map(l => Block.P(l.toList))
+
+val header_marker: P[Header] = (
+          P.string("###").as(Header.H3) 
         | P.string("##").as(Header.H2) 
         | P.string("#").as(Header.H1)
-    ).surroundedBy(whitespaces0)
+    ).surroundedBy(wsp0)
 
-val line: P[Line] = (header ~ text).backtrack.map(x => Line.Hdr(x._1, x._2)) | text.map(x => Line.P(x))
+val header : P[Block] = ((header_marker <* wsp0) ~ line).map((h, l) => Block.Hdr(l, h))
 
-val body: P[Expr] = line.surroundedBy(newline0).rep.map(l => Expr.Lines(l.toList))
+val block : P[Block] = header | paragraph
+
+val body : Parser0[Body] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(l => Body.Blocks(l))
+
+
+//val line2: P[Block] = (header_marker ~ words).backtrack.map(x => Block.Hdr(x._2, x._1)) | words.map(x => Block.P(x))
+
+//val body: P[Expr] = line2.surroundedBy(lf0).rep.map(l => Expr.Lines(l.toList))
