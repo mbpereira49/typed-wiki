@@ -3,6 +3,9 @@ import cats.parse.{Parser => P, Parser0 => P0}
 import cats.parse.Parser.not
 
 val id: P[String] = alpha.rep.string
+val typeId: P[Type] = P.recursive[Type] { recurse =>
+    recurse.between(P.string("List["), P.string("]")).map(Type.ListType(_)) | id.map(Type.Identifier(_))
+}
 val method: P[String] = (alpha.rep.string).repSep(wsp).string
 
 val any_sp0: P0[Unit] = (wsp | lf).rep0.void
@@ -11,7 +14,7 @@ val equals: P[Unit] = P.char('=').surroundedBy(any_sp0)
 def with_wsp[A](p: P0[A]): P0[A] = p.surroundedBy(any_sp0)
 def with_wsp[A](p: P[A]): P[A] = p.surroundedBy(any_sp0)
 
-val variable_declaration: P[(String, String)] = (id ~ (P.char(':').surroundedBy(any_sp0) *> id)).surroundedBy(any_sp0)
+val variable_declaration: P[(String, Type)] = (id ~ (P.char(':').surroundedBy(any_sp0) *> typeId)).surroundedBy(any_sp0)
 val method_definition: P[(String, String)] = (id ~ (equals *> method)).surroundedBy(any_sp0)
 
 def list[A] (p : P[A]): P0[List[A]] = with_wsp(p.repSep0(P.char(',').surroundedBy(any_sp0)))
@@ -28,7 +31,7 @@ val fields: P[List[Field]] = bracket_list(field)
 
 val extend: P[String] = with_wsp(P.string("extends")) *> with_wsp(id)
 val implement: P[List[String]] = with_wsp(P.string("implements")) *> list(with_wsp(id))
-val type_definition  : P[Type] = 
+val type_definition  : P[TypeDef] = 
   (P.string("type") *> 
   with_wsp(id) ~ (extend.? ~ implement.?) ~ (equals *> fields))
   .map(x => x match 
@@ -37,5 +40,5 @@ val type_definition  : P[Type] =
           case Some(l) => l
           case None => Nil
       }
-      Type(id, e, i_list, fields)
+      TypeDef(id, e, i_list, fields)
 )
