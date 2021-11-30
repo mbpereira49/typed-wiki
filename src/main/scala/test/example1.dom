@@ -1,0 +1,21 @@
+class Date implements Printable = [
+    data = [day: Int, month: Int, year: Int],
+    let string = self.month.string + "/" + self.day.string + "/" + self.year.string
+]
+
+class Notes implements TemplatedPage = [
+    data = [
+        date: Date,
+        course: String,
+        raw_notes: String
+    ],
+    let title = self.course + self.date,
+    let template = read_template "example1.templ"
+]
+
+class PLNotes extends Notes = [let course = "252r"]
+
+class SequencePage implements Page = [
+    data = [items : List[InlineGenerate]],
+    let render_full = self.items.mapInstanceMethod(render_inline).join()
+]

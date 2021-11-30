@@ -1,0 +1,34 @@
+/*
+Built-in types: Unit, String (supports concatenation (+), is InlineGenerate), Int (supports str), Template (generate), HTML
+Built-in functions: read: String => String, read_template: String => Template, unique: Object => String
+*/
+
+interface Printable = [
+    methods = [string: String]
+]
+
+interface InlineGenerate = [
+    methods = [render_inline: HTML]
+]
+interface FullGenerate = [
+    methods = [render_full: HTML]
+]
+interface Generate extends InlineGenerate, FullGenerate
+
+interface Linkable = [
+    methods = [link: String]
+    let link = unique(self) + ".html"
+]
+
+interface Page extends Generate, Linkable = [
+    data = [title: String],
+    let render_inline = "<a href=" + link + ">" + self.title + "</a>"
+]
+interface TemplatedPage extends Page = [
+    data = [template: Template],
+    let render_full = template.generate(self)
+]
+
+interface Table extends Generate = [
+    ...
+]

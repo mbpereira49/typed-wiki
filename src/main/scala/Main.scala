@@ -11,7 +11,7 @@ def parse_and_generate[A](parser: Parser[A], fileIn: String, fileOut: String): U
     val parsed = substance.parse(raw)
     write(parsed, fileOut)
 
-@main def hello =
+@main def main =
     val fileContents = read("src/main/scala/test/test1.dom")
     val parsed = type_definition.parse(fileContents)
     println(parsed)
