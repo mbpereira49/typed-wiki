@@ -1,5 +1,5 @@
-def generate(b: Body): String = b match
-  case Body.Blocks(l) => 
+def generate(s: Substance): String = s match
+  case Substance(l) => 
     if l.isEmpty then ""
     else l.map(generateBlock).reduce((x, y) => s"$x\n$y")
 
@@ -20,7 +20,7 @@ def generateBlock(b : Block): String =
 
 def generateLine(l : Line): String = 
   l match
-    case Line.Line_(l) => l.map(generateText).mkString(" ")
+    case Line(l) => l.map(generateText).mkString(" ")
 
 def generateText(t: Text): String =
   t match {

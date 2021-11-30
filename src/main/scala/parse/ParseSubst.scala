@@ -1,4 +1,3 @@
-import cats.data.NonEmptyList
 import cats.parse.Rfc5234.{alpha, sp, vchar, wsp, lf}
 import cats.parse.{Parser => P, Parser0}
 import cats.parse.Parser.not
@@ -20,8 +19,8 @@ val wordsWithout: P[Any] => P[String] = p =>
 val normal_words = wordsWithout(special)
 
 val line: P[Line] = P.recursive[Line] { recurse =>
-    val bold_line = (bold *> recurse <* bold).map(l => Text.Bold(l))
-    val italics_line = (italics *> recurse <* italics).map(l => Text.Italics(l))
+    val bold_line = (bold *> recurse <* bold).map(Text.Bold(_))
+    val italics_line = (italics *> recurse <* italics).map(Text.Italics(_))
     val ref_line =
       val leftParen = P.char('(')
       val rightParen = P.char(')')
@@ -32,11 +31,11 @@ val line: P[Line] = P.recursive[Line] { recurse =>
       )
     val formatted: P[Text] = bold_line | italics_line | ref_line
 
-    val plain: P[Text] = normal_words.map(s => Text.Plain(s))
+    val plain: P[Text] = normal_words.map(Text.Plain(_))
 
     val text: P[Text] = formatted.backtrack | plain
 
-    text.repSep(wsp).map(l => Line.Line_(l.toList))
+    text.repSep(wsp).map(l => Line(l.toList))
 }
 
 val paragraph: P[Block] = line.repSep(sp ~ sp ~ lf).map(l => Block.P(l.toList))
@@ -51,4 +50,4 @@ val header : P[Block] = ((header_marker <* wsp0) ~ line).map((h, l) => Block.Hdr
 
 val block : P[Block] = header | paragraph
 
-val body : Parser0[Body] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(l => Body.Blocks(l))
+val substance : Parser0[Substance] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(Substance(_))
