@@ -17,4 +17,4 @@ object Block:
   case class P(ls: Seq[Line]) extends Block // paragraph
   case class Hdr(l: Line, h: Header) extends Block // header
 
-case class Substance(l: List[Block])
+case class Template(l: List[Block])

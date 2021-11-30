@@ -50,4 +50,4 @@ val header : P[Block] = ((header_marker <* wsp0) ~ line).map((h, l) => Block.Hdr
 
 val block : P[Block] = header | paragraph
 
-val substance : Parser0[Substance] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(Substance(_))
+val template : Parser0[Template] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(Template(_))

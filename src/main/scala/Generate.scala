@@ -1,5 +1,5 @@
-def generate(s: Substance): String = s match
-  case Substance(l) => 
+def generate(s: Template): String = s match
+  case Template(l) => 
     if l.isEmpty then ""
     else l.map(generateBlock).reduce((x, y) => s"$x\n$y")
 

@@ -1,17 +1,15 @@
-import cats.parse.Parser
+import cats.parse.Parser0
 
-val filename = "test1"
+val filename = "plain_md"
 
 val dir = "src/main/scala/test"
-val fileIn = s"$dir/$filename.subst"
+val fileIn = s"$dir/$filename.templ"
 val fileOut = s"$dir/out/$filename.html" 
 
-def parse_and_generate[A](parser: Parser[A], fileIn: String, fileOut: String): Unit =
+def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): Unit =
     val raw = read(fileIn)
-    val parsed = substance.parse(raw)
+    val parsed = p.parse(raw)
     write(parsed, fileOut)
 
 @main def main =
-    val fileContents = read("src/main/scala/test/test1.dom")
-    val parsed = type_definition.parse(fileContents)
-    println(parsed)
+    parse_and_generate(template, fileIn, fileOut)

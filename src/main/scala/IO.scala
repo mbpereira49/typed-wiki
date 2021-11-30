@@ -8,7 +8,7 @@ def read(fileIn: String): String =
   bufferedSource.close
   fileContents
 
-def write(parsed: Either[Parser.Error, Tuple2[String, Substance]], fileOut: String): Unit = 
+def write(parsed: Either[Parser.Error, Tuple2[String, Template]], fileOut: String): Unit = 
   parsed match {
       case Right(x) => 
         val body = x._2
