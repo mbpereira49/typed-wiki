@@ -8,10 +8,13 @@ val method: P[String] = (alpha.rep.string).repSep(wsp).string
 val any_sp0: P0[Unit] = (wsp | lf).rep0.void
 val equals: P[Unit] = P.char('=').surroundedBy(any_sp0)
 
+def with_wsp[A](p: P0[A]): P0[A] = p.surroundedBy(any_sp0)
+def with_wsp[A](p: P[A]): P[A] = p.surroundedBy(any_sp0)
+
 val variable_declaration: P[(String, String)] = (id ~ (P.char(':').surroundedBy(any_sp0) *> id)).surroundedBy(any_sp0)
 val method_definition: P[(String, String)] = (id ~ (equals *> method)).surroundedBy(any_sp0)
 
-def list[A] (p : P[A]): P0[List[A]] = p.repSep0(P.char(',').surroundedBy(any_sp0))
+def list[A] (p : P[A]): P0[List[A]] = with_wsp(p.repSep0(P.char(',').surroundedBy(any_sp0)))
 def bracket_list[A] (p : P[A]): P[List[A]] = P.char('[') *> list(p) <* P.char(']')
 
 val data_list = bracket_list(variable_declaration)
@@ -23,4 +26,16 @@ val methods: P[Methods] = (P.string("methods") *> (equals *> method_list)).surro
 val field: P[Field] = data | methods
 val fields: P[List[Field]] = bracket_list(field)
 
-val type_ = (P.string("type") *> (id.surroundedBy(any_sp0) ~ (equals *> fields))).map((id, fields) => Type(id, None, Nil, fields))
+val extend: P[String] = with_wsp(P.string("extends")) *> with_wsp(id)
+val implement: P[List[String]] = with_wsp(P.string("implements")) *> list(with_wsp(id))
+val type_definition  : P[Type] = 
+  (P.string("type") *> 
+  with_wsp(id) ~ (extend.? ~ implement.?) ~ (equals *> fields))
+  .map(x => x match 
+    case ((id: String, (e: Option[String], i: Option[List[String]])), fields: List[Field]) =>
+      val i_list = i match {
+          case Some(l) => l
+          case None => Nil
+      }
+      Type(id, e, i_list, fields)
+)

@@ -12,6 +12,6 @@ def parse_and_generate[A](parser: Parser[A], PfileIn: String, fileOut: String): 
     write(parsed, fileOut)
 
 @main def hello =
-    val fileContents = read_markdown("src/main/scala/test/test1.dom")
-    val parsed = type_.parse(fileContents)
+    val fileContents = read("src/main/scala/test/test1.dom")
+    val parsed = type_definition.parse(fileContents)
     println(parsed)
