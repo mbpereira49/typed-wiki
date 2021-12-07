@@ -16,7 +16,7 @@ interface FullGenerate = [
 interface Generate extends InlineGenerate, FullGenerate
 
 interface Linkable = [
-    methods = [link: String]
+    methods = [link: String],
     let link = unique(self) + ".html"
 ]
 

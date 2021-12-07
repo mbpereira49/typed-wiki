@@ -14,31 +14,34 @@ val equals: P[Unit] = P.char('=').surroundedBy(any_sp0)
 def with_wsp[A](p: P0[A]): P0[A] = p.surroundedBy(any_sp0)
 def with_wsp[A](p: P[A]): P[A] = p.surroundedBy(any_sp0)
 
-val variable_declaration: P[(String, Type)] = (id ~ (P.char(':').surroundedBy(any_sp0) *> typeId)).surroundedBy(any_sp0)
-val method_definition: P[(String, String)] = (id ~ (equals *> method)).surroundedBy(any_sp0)
+val declaration: P[(String, Type)] = (id ~ (P.char(':').surroundedBy(any_sp0) *> typeId)).surroundedBy(any_sp0)
+//val implementation: P[(String, String)] = (id ~ (equals *> method)).surroundedBy(any_sp0)
 
 def list[A] (p : P[A]): P0[List[A]] = with_wsp(p.repSep0(P.char(',').surroundedBy(any_sp0)))
 def bracket_list[A] (p : P[A]): P[List[A]] = P.char('[') *> list(p) <* P.char(']')
 
-val data_list = bracket_list(variable_declaration)
-val method_list = bracket_list(method_definition)
+val declaration_list: P[List[(String, Type)]] = bracket_list(declaration)
 
-val data: P[Data] = (P.string("data") *> (equals *> data_list)).surroundedBy(any_sp0).map(l => Data(l.toMap))
-val methods: P[Methods] = (P.string("methods") *> (equals *> method_list)).surroundedBy(any_sp0).map(l => Methods(l.toMap))
+val data: P[Data] = (P.string("data") *> (equals *> declaration_list)).surroundedBy(any_sp0).map(l => Data(l.toMap))
+val methods: P[Methods] = (P.string("methods") *> (equals *> declaration_list)).surroundedBy(any_sp0).map(l => Methods(l.toMap))
 
 val field: P[Field] = data | methods
 val fields: P[List[Field]] = bracket_list(field)
 
-val extend: P[String] = with_wsp(P.string("extends")) *> with_wsp(id)
-val implement: P[List[String]] = with_wsp(P.string("implements")) *> list(with_wsp(id))
-val type_definition  : P[TypeDef] = 
-  (P.string("type") *> 
+val extend: P[List[Relation]] = (with_wsp(P.string("extends")) *> list(with_wsp(id))).map(l => l.map(s => Extends(s)))
+val implement: P[List[Relation]] = (with_wsp(P.string("implements")) *> list(with_wsp(id))).map(l => l.map(s => Implements(s)))
+val class_definition  : P[ClassDef] = 
+  (P.string("class") *> 
   with_wsp(id) ~ (extend.? ~ implement.?) ~ (equals *> fields))
   .map(x => x match 
-    case ((id: String, (e: Option[String], i: Option[List[String]])), fields: List[Field]) =>
+    case ((id: String, (e: Option[List[Relation]], i: Option[List[Relation]])), fields: List[Field]) =>
       val i_list = i match {
           case Some(l) => l
           case None => Nil
       }
-      TypeDef(id, e, i_list, fields)
+      val e_list = e match {
+          case Some(l) => l
+          case None => Nil
+      }
+      ClassDef(id, e_list ++ i_list, fields)
 )
