@@ -13,8 +13,5 @@ def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): U
 
 @main def main =
     parse_and_generate(template, fileIn, fileOut)
-    val parsed = class_definition.parse("class test extends X implements Y = [data = [hey: string], methods = [hi: int]]")
-    parsed match {
-      case Right(x) => println(x._2)
-      case Left(x) => println(x)
-    }
+    val parsed = class_definition.parseAll("class test extends X, Y implements Z= [data= [hey : string], methods = [hi: int]]")
+    println(parsed)
