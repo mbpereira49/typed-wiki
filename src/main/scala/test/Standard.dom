@@ -13,11 +13,11 @@ interface InlineGenerate = [
 interface FullGenerate = [
     methods = [render_full: HTML]
 ]
-interface Generate extends InlineGenerate, FullGenerate
+interface Generate extends InlineGenerate, FullGenerate = []
 
 interface Linkable = [
     methods = [link: String],
-    let link = unique(self) + ".html"
+    let link = self.unique() + ".html"
 ]
 
 interface Page extends Generate, Linkable = [
@@ -27,8 +27,4 @@ interface Page extends Generate, Linkable = [
 interface TemplatedPage extends Page = [
     data = [template: Template],
     let render_full = template.generate(self)
-]
-
-interface Table extends Generate = [
-    ...
 ]

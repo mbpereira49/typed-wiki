@@ -13,5 +13,8 @@ def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): U
 
 @main def main =
     parse_and_generate(template, fileIn, fileOut)
-    val parsed = class_definition.parseAll("class test extends X, Y implements Z= [data= [hey : string], methods = [hi: int]]")
+    val parsed = interface_definition.parseAll("interface test extends X, Y= [data= [hey : string], methods = [hi: int]]")
     println(parsed)
+    val input = read("src/main/scala/test/test.dom")
+    val parsed3 = fields.parse(input)
+    println(parsed3)
