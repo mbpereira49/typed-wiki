@@ -1,7 +1,8 @@
-import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote}
+import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
 import cats.data.NonEmptyList
 
+val any_sp = (wsp | lf | cr).void
 val any_sp0 = (wsp | lf | cr).rep0.void
 extension[A](p : P[A])
   def +[B](that: P0[B]) : P[(A, B)] = p ~ (any_sp0 *> that)
@@ -101,6 +102,12 @@ val interface_definition : P[InterfaceDef] =
       InterfaceDef(id, i, fields)
   )
 
-val definition = class_definition | interface_definition
+val definition: P[Definition] = class_definition | interface_definition
 
-val domain: P0[Domain] = definition.repSep0(lf.rep).map(Domain(_))
+val comment: P[Unit] = (P.string("//") ~ (vchar | wsp).rep0 ~ lf).void
+
+val empty: P0[Unit] = (comment | any_sp).rep0.void
+
+//val domain: P0[Domain] = definition.repSep0((comment.backtrack | any_sp0).rep).map(Domain(_))
+//val domain: P0[Domain] = (comment.repSep0(any_sp0).with1 *> definition).repSep0(lf ~ any_sp0).map(Domain(_)) <* comment.repSep0(any_sp0)
+val domain: P0[Domain] = empty *> definition.repSep0(lf ~ empty).map(Domain(_)) <* empty

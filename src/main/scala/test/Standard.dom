@@ -1,7 +1,6 @@
-/*
-Built-in types: Unit, String (supports concatenation (+), is InlineGenerate), Int (supports str), Template (generate), HTML
-Built-in functions: read: String => String, read_template: String => Template, unique: Object => String
-*/
+// Built-in types: Unit, String (supports concatenation (+), is InlineGenerate), Int (supports str), Template (generate), HTML
+// Built-in functions: read: String => String, read_template: String => Template, unique: Object => String
+
 
 interface Printable = [
     methods = [string: String]
