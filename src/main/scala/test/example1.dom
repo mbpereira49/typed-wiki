@@ -10,7 +10,7 @@ class Notes implements TemplatedPage = [
         raw_notes: String
     ],
     let title = self.course + self.date,
-    let template = read_template "example1.templ"
+    let template = stl.read_template("example1.templ")
 ]
 
 class PLNotes extends Notes = [let course = "252r"]
