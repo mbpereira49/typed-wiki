@@ -1,12 +1,12 @@
 case class Domain(l: Seq[Definition])
 
 sealed trait Relation
-case class Extends(s: String) extends Relation
-case class Implements(s: String) extends Relation
+case class Extends(s: Expr.Identifier) extends Relation
+case class Implements(s: Expr.Identifier) extends Relation
 
 sealed trait Definition
-case class ClassDef(name: String, relations: Seq[Relation], fields: Seq[Field]) extends Definition
-case class InterfaceDef(name: String, relations: Seq[Relation], fields: Seq[Field]) extends Definition
+case class ClassDef(name: Expr.Identifier, relations: Seq[Relation], fields: Seq[Field]) extends Definition
+case class InterfaceDef(name: Expr.Identifier, relations: Seq[Relation], fields: Seq[Field]) extends Definition
 
 sealed trait Field
 case class Data(m: Map[Expr.Identifier, Type]) extends Field
@@ -30,4 +30,4 @@ enum Expr:
 enum Type:
   case Identifier(s: String)
   case ListType(t: Type)
-  case MapType(from: Type, to: Type)
+  case MapType(from: Type, to: Type) // not yet implemented
