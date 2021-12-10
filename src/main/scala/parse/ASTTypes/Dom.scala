@@ -9,8 +9,8 @@ case class ClassDef(name: String, relations: Seq[Relation], fields: Seq[Field]) 
 case class InterfaceDef(name: String, relations: Seq[Relation], fields: Seq[Field]) extends Definition
 
 sealed trait Field
-case class Data(m: Map[String, Type]) extends Field
-case class Methods(m: Map[String, Type]) extends Field
+case class Data(m: Map[Expr.Identifier, Type]) extends Field
+case class Methods(m: Map[Expr.Identifier, Type]) extends Field
 case class Implementation(i: Expr.Identifier, body: Expr) extends Field
 
 enum Lit:

@@ -2,40 +2,9 @@ import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
 import cats.data.NonEmptyList
 
-val any_sp = (wsp | lf | cr).void
-val any_sp0 = (wsp | lf | cr).rep0.void
-extension[A](p : P[A])
-  def +[B](that: P0[B]) : P[(A, B)] = p ~ (any_sp0 *> that)
-  def >>[B](that: P0[B]) : P[B] = p *> (any_sp0 *> that)
-  def <<[B](that: P[B]) : P[A] = p <* (any_sp0 <* that)
+val declaration: P[(Expr.Identifier, Type)] = (identifier + (colon >> typeId))
 
-extension[A](p : P0[A])
-  def +[B](that: P0[B]) : P0[(A, B)] = p ~ (any_sp0 *> that)
-  def >>[B](that: P0[B]) : P0[B] = p *> (any_sp0 *> that)
-  def <<[B](that: P[B]) : P0[A] = p <* (any_sp0 <* that)
-
-val id_char: P[Char] = alpha | P.charIn("_")
-val id: P[String] = id_char.rep.string
-val typeId: P[Type] = P.recursive[Type] { recurse =>
-    recurse.between(P.string("List["), P.string("]")).map(Type.ListType(_)) | id.map(Type.Identifier(_))
-}
-
-val comma = P.char(',')
-val colon = P.char(':')
-val period = P.char('.')
-val plus = P.char('+')
-val equals = P.char('=')
-val leftBracket = P.char('[')
-val rightBracket = P.char(']')
-val leftParen = P.char('(')
-val rightParen = P.char(')')
-
-val declaration: P[(String, Type)] = (id + (colon >> typeId))
-
-def list[A] (p: P[A]): P0[List[A]] = p.repSep0(comma.surroundedBy(any_sp0).backtrack)
-def bracket_list[A] (p : P[A]): P[List[A]] = leftBracket >> list(p) << rightBracket
-
-val declaration_list: P[List[(String, Type)]] = bracket_list(declaration)
+val declaration_list: P[List[(Expr.Identifier, Type)]] = bracket_list(declaration)
 
 val data: P[Data] = (P.string("data") >> (equals >> declaration_list)).map(l => Data(l.toMap))
 val methods: P[Methods] = (P.string("methods") >> (equals >> declaration_list)).map(l => Methods(l.toMap))
@@ -52,7 +21,6 @@ def construct_accesses(e: Expr, l: NonEmptyList[Attribute]): Expr.Access =
     }
   } 
 val expr: P[Expr] = P.recursive[Expr] { recurse =>
-  val identifier: P[Expr.Identifier] = id.map(x => Expr.Identifier(x))
   val literal: P[Expr.Literal] = (number | string).map(Expr.Literal(_))
   val property: P[Attribute] = identifier.map(Attribute.Property(_))
   val method: P[Attribute] = (identifier ~ (leftParen >> list(recurse) << rightParen))
@@ -108,6 +76,4 @@ val comment: P[Unit] = (P.string("//") ~ (vchar | wsp).rep0 ~ lf).void
 
 val empty: P0[Unit] = (comment | any_sp).rep0.void
 
-//val domain: P0[Domain] = definition.repSep0((comment.backtrack | any_sp0).rep).map(Domain(_))
-//val domain: P0[Domain] = (comment.repSep0(any_sp0).with1 *> definition).repSep0(lf ~ any_sp0).map(Domain(_)) <* comment.repSep0(any_sp0)
 val domain: P0[Domain] = empty *> definition.repSep0(lf ~ empty).map(Domain(_)) <* empty
