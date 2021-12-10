@@ -13,6 +13,6 @@ def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): U
 
 @main def main =
     parse_and_generate(template, fileIn, fileOut)
-    val input = read("src/main/scala/test/example1.dom")
-    val parsed3 = domain.parse(input)
+    val input = read("src/main/scala/test/simple.subst")
+    val parsed3 = subst.parse(input)
     println(parsed3)

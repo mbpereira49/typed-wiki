@@ -48,6 +48,8 @@ val header_marker: P[Header] = (
 
 val header : P[Block] = ((header_marker <* wsp0) ~ line).map((h, l) => Block.Hdr(l, h))
 
+val meta: P[Block] = ((leftBracket ~ leftBracket) >> implement0 << (rightBracket ~ rightBracket)).map(Block.Meta(_))
+
 val block : P[Block] = header | paragraph
 
 val template : Parser0[Template] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(Template(_))

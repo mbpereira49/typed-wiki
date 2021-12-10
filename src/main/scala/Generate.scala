@@ -1,13 +1,13 @@
 def generate(s: Template): String = s match
   case Template(l) => 
     if l.isEmpty then ""
-    else l.map(generateBlock).reduce((x, y) => s"$x\n$y")
+    else l.map(generateBlock).flatten.reduce((x, y) => s"$x\n$y")
 
-def generateBlock(b : Block): String =
+def generateBlock(b : Block): Option[String] =
   b match {
       case Block.P(ls) => 
         val ls_gen = ls.map(generateLine).mkString("<br>\n")
-        s"<p>$ls_gen</p>"
+        Some(s"<p>$ls_gen</p>")
       case Block.Hdr(l, h) =>
         val l_gen = generateLine(l)
         val tag = h match {
@@ -15,7 +15,8 @@ def generateBlock(b : Block): String =
             case Header.H2 => "h2"
             case Header.H3 => "h3"
         }
-        s"<$tag>$l_gen</$tag>"
+        Some(s"<$tag>$l_gen</$tag>")
+      case Block.Meta(_) => None
   }
 
 def generateLine(l : Line): String = 

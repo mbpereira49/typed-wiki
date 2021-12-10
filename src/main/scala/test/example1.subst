@@ -1,4 +1,4 @@
-note: Notes = PLNotes(title = "Example", raw_notes = read "notes.txt", date = "11/30/21")
+note: Notes = PLNotes(title = "Example", raw_notes = stl.read("notes.txt"), date = "11/30/21")
 
 t : Table = select all x where type(x) = Notes and x.course = "252r"
 
