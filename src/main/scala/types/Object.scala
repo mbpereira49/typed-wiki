@@ -1,11 +1,17 @@
 package types
 
-import scala.collection.mutable.Map
 import parse.ast.{Identifier, Expr}
 
-class Function(val args: Map[Identifier, Type], val body: Expr)
+trait Function:
+    def run(env: Env)(objs: List[Object]): Object
 
-class Env(var mapping: Map[Identifier, Object]):
+class Method(val args: Map[Identifier, Type], val body: Expr) extends Function:
+    def run(env: Env)(objs: List[Object]): Object =
+        val bindings: Map[Identifier, Object] = (args.keys zip objs).toMap
+        val new_env: Env = Env(env.mapping ++ bindings)
+        eval.evalExpr(body, new_env)
+
+class Env(var mapping: Map[Identifier, Object] = Map()):
     def update(new_mappings: Map[Identifier, Object]): Unit = 
         mapping = mapping ++ new_mappings
 

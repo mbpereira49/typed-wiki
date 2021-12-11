@@ -8,7 +8,8 @@ def evalExpr(e: Expr, env: Env): Object =
         case Expr.Plus(e1, e2) =>
             val v1 = evalExpr(e1, env)
             val v2 = evalExpr(e2, env)
-            return v1
+            val plus = Attribute.Method(Identifier("__plus"), List(e2))
+            return evalAccess(v1, plus, env)
         case Expr.Literal(l) => evalLiteral(l)
         case Expr.Var(id) => evalVar(id, env)
         case Expr.Access(e, a) => 
@@ -38,7 +39,5 @@ def evalAccess(obj: Object, a: Attribute, env: Env): Object =
         case Attribute.Method(id: Identifier, args: List[Expr]) => 
             val eval_args: List[Object] = args.map(e => evalExpr(e, env))
             val f : Function = obj.t.methods(id)
-            val bindings: Map[Identifier, Object] = (f.args.keys zip eval_args).toMap
-            val new_env: Env = Env(env.mapping ++ bindings)
-            evalExpr(f.body, new_env)
+            f.run(env)(eval_args)
     }
