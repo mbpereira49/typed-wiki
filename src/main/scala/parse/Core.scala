@@ -8,7 +8,7 @@ val id: P[String] = id_char.rep.string
 val typeId: P[Type] = P.recursive[Type] { recurse =>
     recurse.between(P.string("List["), P.string("]")).map(Type.ListType(_)) | id.map(Type.Identifier(_))
 }
-val identifier: P[Expr.Identifier] = id.map(Expr.Identifier(_))
+val identifier: P[Identifier] = id.map(Identifier(_))
 
 val number: P[Lit] = digit.rep.string.map(s => Lit.Number(s.toInt))
 val valid_char: P[String] = alpha.string | digit.string | P.charIn(" !@#$%^&*()-_=+[]{};:<>,./?").string | P.string("\\\"").string.as("\"")

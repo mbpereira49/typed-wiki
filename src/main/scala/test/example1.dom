@@ -17,5 +17,5 @@ class PLNotes extends Notes = [let course = "252r"]
 
 class SequencePage implements Page = [
     data = [items : List[InlineGenerate]],
-    let render_full = self.items.mapInstanceMethod(render_inline).join()
+    let render_full() = self.items.mapInstanceMethod(render_inline).join()
 ]

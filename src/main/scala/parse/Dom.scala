@@ -3,18 +3,22 @@ import cats.parse.{Parser => P, Parser0 => P0}
 
 import parse.ast.*
 
-val declaration: P[(Expr.Identifier, Type)] = (identifier + (colon >> typeId))
+val declaration: P[(Identifier, Type)] = (identifier + (colon >> typeId))
 
-val declaration_list: P[List[(Expr.Identifier, Type)]] = bracket_list(declaration)
+val declaration_list: P[List[(Identifier, Type)]] = bracket_list(declaration)
 
 val data: P[Data] = (P.string("data") >> (equals >> declaration_list)).map(l => Data(l.toMap))
 val methods: P[Methods] = (P.string("methods") >> (equals >> declaration_list)).map(l => Methods(l.toMap))
 
-val let: P[Field] = ((P.string("let") >> id) + (equals >> expr))
+val let_method: P[Field] = ((P.string("let") >> (id ~ paren_list(identifier))) + (equals >> expr))
   .map(x => x match
-    case (id: String, e: Expr) => Implementation(Expr.Identifier(id), e))
+    case ((id: String, args: List[Identifier]), e: Expr) => Implementation(Identifier(id), args, e))
 
-val field: P[Field] = data | methods | let
+val let_data: P[Field] = ((P.string("let") >> id) + (equals >> expr))
+  .map(x => x match
+    case (id: String, e: Expr) => Assignment(Identifier(id), e))
+
+val field: P[Field] = data | methods | let_method.backtrack | let_data
 val fields: P[List[Field]] = bracket_list(field)
 
 val extend: P[List[Relation]] = (P.string("extends") >> list(identifier)).map(l => l.map(s => Extends(s)))
@@ -32,14 +36,14 @@ val implement0: P0[List[Relation]] = implement.?.map(option_to_list)
 val class_definition : P[ClassDef] = 
   (P.string("class") >> (identifier + (extend0 + implement0) + (equals >> fields)))
   .map(x => x match 
-    case ((id: Expr.Identifier, (e: List[Relation], i: List[Relation])), fields: List[Field]) =>
+    case ((id: Identifier, (e: List[Relation], i: List[Relation])), fields: List[Field]) =>
       ClassDef(id, e ++ i, fields)
   )
 
 val interface_definition : P[InterfaceDef] =   
   (P.string("interface") >> (identifier + extend0 + (equals >> fields)))
   .map(x => x match 
-    case ((id: Expr.Identifier, i: List[Relation]), fields: List[Field]) =>
+    case ((id: Identifier, i: List[Relation]), fields: List[Field]) =>
       InterfaceDef(id, i, fields)
   )
 
