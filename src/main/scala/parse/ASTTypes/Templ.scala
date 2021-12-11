@@ -9,6 +9,7 @@ object Text:
   case class Bold(l: Line) extends Text
   case class Italics(l: Line) extends Text
   case class Link(l: Line, ref: String) extends Text
+  case class Insert(e: Expr) extends Text
 
 case class Line(l: Seq[Text])
 

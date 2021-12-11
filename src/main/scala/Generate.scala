@@ -35,6 +35,7 @@ def generateText(t: Text): String =
       case Text.Link(line, link) =>
         val l_gen = generateLine(line)
         s"<a href = $link>$l_gen</a>"
+      case Text.Insert(e) => "{null}"
 
   }
   

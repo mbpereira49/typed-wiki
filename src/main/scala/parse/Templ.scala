@@ -5,7 +5,7 @@ import cats.parse.Parser.not
 val lf0: Parser0[Unit] = lf.rep0.void 
 val wsp0: Parser0[Unit] = wsp.rep0.void 
 
-val special = P.charIn("*_()[]")
+val special = P.charIn("*_()[]{}")
 val bold = P.string("*").as(Format.Bold)
 val italics = P.string("_").as(Format.Italics)
 
@@ -22,14 +22,11 @@ val line: P[Line] = P.recursive[Line] { recurse =>
     val bold_line = (bold *> recurse <* bold).map(Text.Bold(_))
     val italics_line = (italics *> recurse <* italics).map(Text.Italics(_))
     val ref_line =
-      val leftParen = P.char('(')
-      val rightParen = P.char(')')
-      val leftBracket = P.char('[')
-      val rightBracket = P.char(']')
       ((leftBracket *> recurse <* rightBracket) ~ (leftParen *> link <* rightParen)).map(
         (line, link) => Text.Link(line, link)
       )
-    val formatted: P[Text] = bold_line | italics_line | ref_line
+    val insert = (leftCurly >> expr << rightCurly).map(Text.Insert(_))
+    val formatted: P[Text] = bold_line | italics_line | ref_line | insert
 
     val plain: P[Text] = normal_words.map(Text.Plain(_))
 
@@ -50,6 +47,6 @@ val header : P[Block] = ((header_marker <* wsp0) ~ line).map((h, l) => Block.Hdr
 
 val meta: P[Block] = ((leftBracket ~ leftBracket) >> implement0 << (rightBracket ~ rightBracket)).map(Block.Meta(_))
 
-val block : P[Block] = header | paragraph
+val block : P[Block] = header | meta | paragraph
 
 val template : Parser0[Template] = block.repSep0(lf ~ lf).surroundedBy(lf0).map(Template(_))

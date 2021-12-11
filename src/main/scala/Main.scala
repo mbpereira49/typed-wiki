@@ -1,6 +1,6 @@
 import cats.parse.Parser0
 
-val filename = "plain_md"
+val filename = "simple"
 
 val dir = "src/main/scala/test"
 val fileIn = s"$dir/$filename.templ"
@@ -13,6 +13,6 @@ def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): U
 
 @main def main =
     parse_and_generate(template, fileIn, fileOut)
-    val input = read("src/main/scala/test/simple.subst")
-    val parsed3 = subst.parse(input)
+    val input = read("src/main/scala/test/test.dom")
+    val parsed3 = template.parse(input)
     println(parsed3)
