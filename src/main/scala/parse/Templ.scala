@@ -2,6 +2,8 @@ import cats.parse.Rfc5234.{alpha, sp, vchar, wsp, lf}
 import cats.parse.{Parser => P, Parser0}
 import cats.parse.Parser.not
 
+import parse.ast.*
+
 val lf0: Parser0[Unit] = lf.rep0.void 
 val wsp0: Parser0[Unit] = wsp.rep0.void 
 

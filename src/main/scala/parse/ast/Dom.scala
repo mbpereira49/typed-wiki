@@ -1,3 +1,5 @@
+package parse.ast
+
 case class Domain(l: Seq[Definition])
 
 sealed trait Relation

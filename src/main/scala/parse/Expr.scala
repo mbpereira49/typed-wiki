@@ -2,6 +2,8 @@ import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
 import cats.data.NonEmptyList
 
+import parse.ast.*
+
 def nest_attributes(e: Expr, l: NonEmptyList[Attribute]): Expr.Access =
   l match
     case NonEmptyList(hd, tl) => tl match {
@@ -16,8 +18,9 @@ val expr: P[Expr] = P.recursive[Expr] { recurse =>
     .map(x => x match
       case (id: Expr.Identifier, e: List[Expr]) => Attribute.Method(id, e))
   val attribute: P[Attribute] = method.backtrack | property
-  val access: P[Expr.Access] = (identifier ~ (period *> attribute).rep).map(x => x match 
-      case (id: Expr.Identifier, l: NonEmptyList[Attribute]) => nest_attributes(id, l))
+  val value = identifier | literal
+  val access: P[Expr.Access] = (value ~ (period *> attribute).rep).map(x => x match 
+      case (id: Expr, l: NonEmptyList[Attribute]) => nest_attributes(id, l))
  
   val obj: P[Expr] = leftParen >> recurse << rightParen | access.backtrack | literal.backtrack | identifier
   val add: P[Expr.Plus] = ((obj << plus) + recurse).map(x => 

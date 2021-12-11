@@ -1,6 +1,8 @@
 import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
 
+import parse.ast.*
+
 val argument: P[(Expr.Identifier, Expr)] = identifier + (equals >> expr)
 val argument_map : P0[Map[Expr.Identifier, Expr]] = list(argument).map(l => l.toMap)
 val construction : P[Construction] = (identifier ~ (leftParen >> argument_map << rightParen)).map(x => 

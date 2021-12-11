@@ -2,6 +2,8 @@ import scala.io.Source
 import java.io._
 import cats.parse.Parser
 
+import parse.ast.*
+
 def read(fileIn: String): String =
   val bufferedSource = Source.fromFile(fileIn)
   val fileContents = bufferedSource.getLines mkString "\n"

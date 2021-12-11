@@ -1,6 +1,8 @@
 import cats.parse.Rfc5234.{lf}
 import cats.parse.{Parser => P, Parser0 => P0}
 
+import parse.ast.*
+
 val declaration: P[(Expr.Identifier, Type)] = (identifier + (colon >> typeId))
 
 val declaration_list: P[List[(Expr.Identifier, Type)]] = bracket_list(declaration)

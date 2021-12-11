@@ -1,3 +1,5 @@
+import parse.ast.*
+
 def generate(s: Template): String = s match
   case Template(l) => 
     if l.isEmpty then ""

@@ -1,6 +1,8 @@
 import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
 
+import parse.ast.*
+
 val id_char: P[Char] = alpha | P.charIn("_")
 val id: P[String] = id_char.rep.string
 val typeId: P[Type] = P.recursive[Type] { recurse =>
