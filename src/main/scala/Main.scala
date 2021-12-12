@@ -15,12 +15,13 @@ def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): U
 
 @main def main =
     parse_and_generate(template, fileIn, fileOut)
-    val input = read("src/main/scala/test/test.dom")
-    val parsed = expr.parse(input)
-    println(parsed)
+    val input = read("src/main/scala/test/simple.dom")
+    val parsed = domain.parse(input)
+    //println(parsed)
     parsed match {
-        case Right(s, e) => 
-            if !(s.isEmpty) then println(s"Unparsed: $s") else ()
-            println("Output: " + eval.evalExpr(e, types.Env()).toString)
+        case Right(s, d) => 
+            if !(s.isEmpty) then println(s"Unparsed: $s")
+            else println(eval.evalDom(d, types.Env()).toString)
+            //println("Output: " + eval.evalExpr(e, types.Env()).toString)
         case Left(err) => println(err)
     }

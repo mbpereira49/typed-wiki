@@ -4,24 +4,25 @@ import parse.ast.{Expr, Identifier, Domain, Definition, ClassDef, InterfaceDef, 
 import types.{Env, TypeEnv, Object, Function, Property, Type, IDType, ClassType, InterfaceType}
 import scala.collection.mutable
 
-def updateTenv(base: TypeEnv, add: TypeEnv): TypeEnv = 
-    TypeEnv(base.mapping ++ add.mapping)
-
-def parseDom(d: Domain, env: Env): TypeEnv =
+def evalDom(d: Domain, env: Env): TypeEnv =
     val tenv = TypeEnv()
+    tenv.addType(types.String.t)
+    tenv.addType(types.Int.t)
     d match
         case Domain(l) => 
             for definition <- l do 
-                val t = parseDefinition(definition, env, tenv)
+                val t = constructDefinition(definition, env, tenv)
                 tenv.addType(t)
     tenv
 
-def parseDefinition(d: Definition, env: Env, tenv: TypeEnv): IDType = 
+def constructDefinition(d: Definition, env: Env, tenv: TypeEnv): IDType = 
     d match {
         case ClassDef(name, relations, fields) =>
             val (data, methods) = createMappings(relations, fields, tenv)
             ClassType(name, data, methods)
-        case InterfaceDef(name, relation, fields) => null
+        case InterfaceDef(name, relations, fields) =>
+            val (data, methods) = createMappings(relations, fields, tenv)
+            InterfaceType(name, data, methods)
     }
 
 def createMappings(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):
@@ -48,7 +49,7 @@ def createMappings(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):
                 val obj = types.LazyObject(expr)
                 val impl = types.Implementation.Implemented(t, obj)
                 data += (id -> impl)
-            else throw Exception("Cannot assign undeclared variable")
+            else throw Exception(s"Cannot assign undeclared variable $id")
         case Implementation(id, args, expr) => 
             if methods contains id then
                 val t = types.getType(methods(id))
@@ -56,7 +57,7 @@ def createMappings(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):
                 val obj = types.Method(arg_map, expr)
                 val impl = types.Implementation.Implemented(t, obj)
                 data += (id -> impl)
-            else throw Exception("Cannot implement undeclared method") 
+            else throw Exception(s"Cannot implement undeclared method $id") 
     }
     (data.toMap, methods.toMap)
 
