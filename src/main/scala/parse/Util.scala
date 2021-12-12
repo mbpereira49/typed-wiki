@@ -24,6 +24,7 @@ val leftParen = P.char('(')
 val rightParen = P.char(')')
 val leftCurly = P.char('{')
 val rightCurly = P.char('}')
+val rightArrow = P.string("=>")
 
 def list[A] (p: P[A]): P0[List[A]] = p.repSep0(comma.surroundedBy(any_sp0).backtrack)
 def bracket_list[A] (p : P[A]): P[List[A]] = leftBracket >> list(p) << rightBracket

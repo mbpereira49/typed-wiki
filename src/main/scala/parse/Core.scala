@@ -1,12 +1,27 @@
 import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
+import cats.data.NonEmptyList
 
 import parse.ast.*
+
+def nest_functions(t: Type, l: NonEmptyList[Type]): Type.MapType =
+  l match
+    case NonEmptyList(hd, tl) => tl match {
+      case Nil => Type.MapType(t, hd)
+      case hd2 :: tl2 => Type.MapType(t, nest_functions(hd, NonEmptyList(hd2, tl2)))
+    }
+  
 
 val id_char: P[Char] = alpha | P.charIn("_")
 val id: P[String] = id_char.rep.string
 val typeId: P[Type] = P.recursive[Type] { recurse =>
-    recurse.between(P.string("List["), P.string("]")).map(Type.ListType(_)) | id.map(Type.Identifier(_))
+    val list_type = recurse.between(P.string("List["), P.string("]")).map(Type.ListType(_))
+    val base = id.map(Type.Identifier(_))
+    val obj = leftParen >> recurse << rightParen | list_type | base
+    val mapping = (obj + (rightArrow >> obj).repSep(any_sp0)).map(x => x match
+      case (t: Type, l: NonEmptyList[Type]) => nest_functions(t, l))
+ 
+    mapping.backtrack | list_type | base
 }
 val identifier: P[Identifier] = id.map(Identifier(_))
 
