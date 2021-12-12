@@ -6,30 +6,41 @@ import types.Function
 sealed trait Value:
     val value: Any
     override def toString: Predef.String = value.toString
+    
 
-class NativeFunction(f: List[Object] => Object) extends Function:
-    def run(env : Env)(objs: List[Object]): Object = f(objs)
+object Unit:
+    val t = BaseType(Identifier("Unit"), Map(), Map())
+class Unit extends Object, Value:
+    val value: scala.Unit = ()
+    val t = Unit.t
 
+object String:
+    val plus: NativeFunction = NativeFunction(self => objs =>
+            (self, objs) match {
+                case (_, Nil) => throw Exception("'+' takes second argument")
+                case (self: types.String, (that : types.String) :: tl) => types.String(self.value + that.value)
+                case _ => throw Exception("Type of second argument to '+' does not match String")
+            },
+            MapType(t, t)
+        )
+    val methods = Map[Identifier, Function](Identifier("__plus") -> plus)
+    val t = BaseType(Identifier("String"), Map(), methods)
 class String(s: Predef.String) extends Object, Value:
-    val plus = NativeFunction(objs =>
-        objs match {
-            case Nil => throw Exception("'+' takes second argument")
-            case (that : types.String) :: tl => types.String(value + that.value)
-            case _ => throw Exception("Type of second argument to '+' does not match String")
-        }
-    )
-    val methods = Map(Identifier("__plus") -> plus)
-    val t = Type(Identifier("String"), Map(), methods)
     val value: Predef.String = s
-class Int(i: scala.Int) extends Object, Value:
-    val toStr = NativeFunction(l => types.String(value.toString))
-    val plus = NativeFunction(objs =>
-        objs match {
-            case Nil => throw Exception("'+' takes second argument")
-            case (that : types.Int) :: tl => types.Int(value + that.value)
+    val t = String.t
+
+object Int:
+    val toStr = NativeFunction(self => l => types.String("self.value.toString"), MapType(Unit.t, String.t))
+    val plus: NativeFunction = NativeFunction(self => objs =>
+        (self, objs) match {
+            case (_, Nil) => throw Exception("'+' takes second argument")
+            case (self: types.Int, (that : types.Int) :: tl) => types.Int(self.value + that.value)
             case _ => throw Exception("Type of second argument to '+' does not match Int")
-        }
+        },
+        MapType(t, t)
     )
     val methods = Map[Identifier, Function](Identifier("str") -> toStr, Identifier("__plus") -> plus)
-    val t = Type(Identifier("Int"), Map(), methods)
+    val t = BaseType(Identifier("Int"), Map(), methods)
+class Int(i: scala.Int) extends Object, Value:
     val value: scala.Int = i
+    val t = Int.t

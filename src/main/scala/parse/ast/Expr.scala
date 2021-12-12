@@ -19,4 +19,4 @@ enum Expr:
 enum Type:
   case Identifier(s: String)
   case ListType(t: Type)
-  //case MapType(from: Type, to: Type) // not yet implemented
+  case MapType(from: Type, to: Type) // not yet implemented
