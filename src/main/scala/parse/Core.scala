@@ -17,7 +17,9 @@ val id: P[String] = id_char.rep.string
 val typeId: P[Type] = P.recursive[Type] { recurse =>
     val list_type = recurse.between(P.string("List["), P.string("]")).map(Type.ListType(_))
     val base = id.map(Type.Identifier(_))
-    val obj = leftParen >> recurse << rightParen | list_type | base
+    val tuple = paren_list(recurse).map(Type.TupleType(_))
+    val parenthesized = leftParen >> recurse << rightParen
+    val obj = parenthesized.backtrack | tuple.backtrack | list_type | base
     val mapping = (obj + (rightArrow >> obj).repSep(any_sp0)).map(x => x match
       case (t: Type, l: NonEmptyList[Type]) => nest_functions(t, l))
  

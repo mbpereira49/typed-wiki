@@ -10,9 +10,9 @@ val declaration_list: P[List[(Identifier, Type)]] = bracket_list(declaration)
 val data: P[Data] = (P.string("data") >> (equals >> declaration_list)).map(l => Data(l.toMap))
 val methods: P[Methods] = (P.string("methods") >> (equals >> declaration_list)).map(l => Methods(l.toMap))
 
-val let_method: P[Field] = ((P.string("let") >> (id ~ paren_list(identifier))) + (equals >> expr))
+val let_method: P[Field] = ((P.string("let") >> (id ~ paren_list(declaration))) + (equals >> expr))
   .map(x => x match
-    case ((id: String, args: List[Identifier]), e: Expr) => Implementation(Identifier(id), args, e))
+    case ((id: String, args: List[(Identifier, String)]), e: Expr) => Implementation(Identifier(id), args.toMap, e))
 
 val let_data: P[Field] = ((P.string("let") >> id) + (equals >> expr))
   .map(x => x match
