@@ -19,13 +19,13 @@ val expr: P[Expr] = P.recursive[Expr] { recurse =>
     .map(x => x match
       case (id: Identifier, e: List[Expr]) => Attribute.Method(id, e))
   val attribute: P[Attribute] = method.backtrack | property
-  val value = variable | literal
+  val value = leftParen >> recurse << rightParen | variable | literal
   val access: P[Expr.Access] = (value ~ (period *> attribute).rep).map(x => x match 
       case (id: Expr, l: NonEmptyList[Attribute]) => nest_attributes(id, l))
  
-  val obj: P[Expr] = leftParen >> recurse << rightParen | access.backtrack | literal.backtrack | variable
+  val obj: P[Expr] = access.backtrack | leftParen >> recurse << rightParen | literal.backtrack | variable
   val add: P[Expr.Plus] = ((obj << plus) + recurse).map(x => 
     x match 
       case (e1: Expr, e2: Expr) => Expr.Plus(e1, e2))
-  add.backtrack | access.backtrack | literal.backtrack | variable
+  add.backtrack | obj
 }

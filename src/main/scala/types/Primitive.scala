@@ -30,7 +30,13 @@ class String(s: Predef.String) extends Object, Value:
     val t = String.t
 
 object Int:
-    val toStr = NativeFunction(self => l => types.String("self.value.toString"), MapType(Unit.t, String.t))
+    val toStr = NativeFunction(self => l => 
+        self match {
+            case (self: Value) => types.String(self.value.toString)
+            case _ => throw Exception("self not Value. Should not reach this but don't know how to guarantee")
+        },
+        MapType(Unit.t, String.t)
+    )
     val plus: NativeFunction = NativeFunction(self => objs =>
         (self, objs) match {
             case (_, Nil) => throw Exception("'+' takes second argument")

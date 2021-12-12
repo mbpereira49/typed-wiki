@@ -18,6 +18,8 @@ def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): U
     val input = read("src/main/scala/test/test.dom")
     val parsed = expr.parse(input)
     parsed match {
-        case Right(s, e) => println(eval.evalExpr(e, types.Env()))
+        case Right(s, e) => 
+            if !(s.isEmpty) then println(s"Unparsed: $s") else ()
+            println("Output: " + eval.evalExpr(e, types.Env()).toString)
         case Left(err) => println(err)
     }
