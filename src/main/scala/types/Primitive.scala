@@ -2,6 +2,7 @@ package types
 
 import parse.ast.Identifier
 import types.Function
+import types.Implementation.Implemented
 
 sealed trait Value:
     val value: Any
@@ -9,13 +10,14 @@ sealed trait Value:
     
 
 object Unit:
-    val t = BaseType(Identifier("Unit"), Map(), Map())
+    val t = BaseType(Identifier("Unit"), Map())
 class Unit extends Object, Value:
     val value: scala.Unit = ()
     val t = Unit.t
 
 object String:
     val plus: NativeFunction = NativeFunction(self => objs =>
+            scala.Console.flush()
             (self, objs) match {
                 case (_, Nil) => throw Exception("'+' takes second argument")
                 case (self: types.String, (that : types.String) :: tl) => types.String(self.value + that.value)
@@ -23,8 +25,8 @@ object String:
             },
             MapType(t, t)
         )
-    val methods = Map[Identifier, Function](Identifier("__plus") -> plus)
-    val t = BaseType(Identifier("String"), Map(), methods)
+    val methods= Map[Identifier, types.Implementation](Identifier("__plus") -> Implemented(MapType(t, t), plus))
+    val t: BaseType = BaseType(Identifier("String"), methods)
 class String(s: Predef.String) extends Object, Value:
     val value: Predef.String = s
     val t = String.t
@@ -45,8 +47,12 @@ object Int:
         },
         MapType(t, t)
     )
-    val methods = Map[Identifier, Function](Identifier("str") -> toStr, Identifier("__plus") -> plus)
-    val t = BaseType(Identifier("Int"), Map(), methods)
+    val methods = Map[Identifier, types.Implementation](
+        Identifier("__plus") -> Implemented(MapType(t, t), plus),
+        Identifier("str") -> Implemented(MapType(t, t), toStr)
+    )
+
+    val t: BaseType = BaseType(Identifier("Int"), methods)
 class Int(i: scala.Int) extends Object, Value:
     val value: scala.Int = i
     val t = Int.t

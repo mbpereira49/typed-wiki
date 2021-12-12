@@ -1,7 +1,7 @@
 package eval
 
 import parse.ast.{Expr, Lit, Attribute, Identifier}
-import types.{Env, Object, Function, Property}
+import types.{Env, Object, Function, Property, Implementation, Type}
 
 def evalExpr(e: Expr, env: Env, self: Object = null): Object =
     e match {
@@ -38,6 +38,13 @@ def evalAccess(obj: Object, a: Attribute, env: Env, self: Object): Object =
             }
         case Attribute.Method(id: Identifier, args: List[Expr]) => 
             val eval_args: List[Object] = args.map(e => evalExpr(e, env, self))
-            val f : Function = obj.t.methods(id)
-            f.run(obj)(env)(eval_args)
+            val f : Implementation = obj.t.methods(id)
+            f match {
+                case Implementation.Implemented(t, f) => f match {
+                    case (f : Function) => 
+                        f.run(obj)(env)(eval_args)
+                    case _ => throw Exception("Can't call non-method")
+                }
+                case Implementation.Unimplemented(_) => throw Exception(s"Method $id not implemented")
+            }
     }

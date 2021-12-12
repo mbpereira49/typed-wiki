@@ -1,6 +1,6 @@
 package types
 
-import parse.ast.Identifier
+import parse.ast.{Identifier, Expr}
 
 trait Object:
     val t: Type
@@ -8,4 +8,10 @@ trait Object:
 trait Property:
     val properties: Map[Identifier, Object]
 
-class Class(val t: Type, val properties: Map[Identifier, Object]) extends Object, Property
+class ClassInstance(val t: Type, val properties: Map[Identifier, Object]) extends Object, Property
+
+class LazyObject(e: Expr):
+    val t = null
+    val f : Env => Object => Object = { env => self => 
+        eval.evalExpr(e, env, self)
+    }
