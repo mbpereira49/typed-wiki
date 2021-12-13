@@ -1,13 +1,17 @@
 package eval
 
-import parse.ast.{Expr, Identifier, Domain, Definition, ClassDef, InterfaceDef, Data, Methods, Assignment, Implementation, Relation, Field}
-import types.{Env, TypeEnv, Object, Function, Property, Type, IDType, ClassType, InterfaceType}
+import parse.ast.{Expr, Identifier, Domain, Definition, ClassDef, InterfaceDef, Data, Methods, Assignment, Implementation, Field, Relation, Extends, Implements}
+import types.{Env, TypeEnv, Object, Function, Property, Type, IDType, StateType, ClassType, InterfaceType}
 import scala.collection.mutable
 
-def evalDom(d: Domain, env: Env): TypeEnv =
+def initializeTenv(): TypeEnv =
     val tenv = TypeEnv()
     tenv.addType(types.String.t)
     tenv.addType(types.Int.t)
+    tenv
+
+def evalDom(d: Domain, env: Env): TypeEnv =
+    val tenv = initializeTenv()
     d match
         case Domain(l) => 
             for definition <- l do 
@@ -18,17 +22,36 @@ def evalDom(d: Domain, env: Env): TypeEnv =
 def constructDefinition(d: Definition, env: Env, tenv: TypeEnv): IDType = 
     d match {
         case ClassDef(name, relations, fields) =>
-            val (data, methods) = createMappings(relations, fields, tenv)
-            ClassType(name, data, methods)
+            val (data, methods) = constructFields(relations, fields, tenv)
+            val parents : Seq[Type] = relations.filter(_.isInstanceOf[Extends]).map(r => getRelationType(r, tenv)).flatten
+            val interfaces : Seq[Type] = relations.filter(_.isInstanceOf[Implements]).map(r => getRelationType(r, tenv)).flatten
+            val refined_parents : Seq[ClassType] = parents.map(refineToClass)
+            val refined_interfaces : Seq[InterfaceType] = interfaces.map(refineToInterface)
+            ClassType(name, data, methods, refined_parents, refined_interfaces)
         case InterfaceDef(name, relations, fields) =>
-            val (data, methods) = createMappings(relations, fields, tenv)
-            InterfaceType(name, data, methods)
+            val parents = relations.filter(_.isInstanceOf[Extends]).map(r => getRelationType(r, tenv)).flatten
+            val (data, methods) = constructFields(relations, fields, tenv)
+            val refined_parents : Seq[InterfaceType] = parents.map(refineToInterface)
+            InterfaceType(name, data, methods, refined_parents)
     }
 
-def createMappings(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):
+def constructFields(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):
     (Map[Identifier, types.Implementation], Map[Identifier, types.Implementation]) =           
     var data = mutable.Map[Identifier, types.Implementation]()
     var methods = mutable.Map[Identifier, types.Implementation]()
+
+    for (r <- relations) do
+        getRelationType(r, tenv) match {
+            case Some(t) => t match {
+                case (t : StateType) =>
+                    data ++= t.data
+                    methods ++= t.methods
+                case (t : Type) =>
+                    methods ++= t.methods
+            }
+            case None => throw Exception(s"class/interface has relation $r on undefined class/interface")
+        }
+
     for (field <- fields)
     do field match {
         case Data(m) => 
@@ -61,6 +84,14 @@ def createMappings(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):
     }
     (data.toMap, methods.toMap)
 
+def getRelationType(r: Relation, tenv: TypeEnv): Option[Type] =
+    val id = r match {
+        case Extends(s) => s
+        case Implements(s) => s
+    }
+    if tenv.mapping contains id then Some(tenv.mapping(id))
+    else None
+
 def getType(t: parse.ast.Type, tenv: TypeEnv): types.Type =
     t match {
         case parse.ast.Type.Identifier(s) => 
@@ -77,4 +108,15 @@ def getType(t: parse.ast.Type, tenv: TypeEnv): types.Type =
         case parse.ast.Type.TupleType(ts) =>
             val cs = ts.map(t => getType(t, tenv))
             types.TupleType(cs)
+    }
+
+def refineToClass(s: Type): ClassType =
+    s match {
+        case (c: ClassType) => c
+        case _ => throw Exception(s"$s of type Type should be of type ClassType")
+    }
+def refineToInterface(s: Type): InterfaceType =
+    s match {
+        case (c: InterfaceType) => c
+        case _ => throw Exception(s"$s of type Type should be of type InterfaceType")
     }
