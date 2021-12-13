@@ -6,6 +6,7 @@ sealed trait Type:
     val methods: Map[Identifier, Implementation]
 sealed trait IDType extends Type:
     val id: Identifier
+    override def toString = id.toString
 sealed trait StateType extends Type:
     val data: Map[Identifier, Implementation]
 
@@ -25,6 +26,7 @@ class InterfaceType(
 class ListType(t: Type) extends Type:
     val methods = Map()
 class MapType(from: Type, to: Type) extends Type:
+    override def toString = s"MapType($from, $to)"
     val methods = Map()
 class TupleType(ts: List[Type]) extends Type:
     val methods = Map()

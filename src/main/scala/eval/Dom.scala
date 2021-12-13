@@ -80,7 +80,7 @@ def constructFields(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv)
                 val arg_map = args.map((id, t) => id -> types.getType(t, tenv))
                 val obj = types.Method(arg_map, expr)
                 val impl = types.Implementation.Implemented(t, obj)
-                data += (id -> impl)
+                methods += (id -> impl)
             else throw Exception(s"Cannot implement undeclared method $id") 
     }
     (data.toMap, methods.toMap)

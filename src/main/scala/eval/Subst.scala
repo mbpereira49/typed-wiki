@@ -29,12 +29,13 @@ class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
                 t match {
                     case (c: ClassType) =>
                         val properties : Map[Identifier, types.Object] = c.data.map((id, impl) =>
-                            impl match {
+                            if args contains id then id -> (eval.evalExpr(args(id), env))
+                            else impl match {
                                 case Implementation.Implemented(t, obj) => 
                                     val found = obj.t
                                     // Should I be discarding t here?
                                     if isSubtype(found, t) then id -> obj
-                                    else throw Exception(s"Object $id expected subtype of type $t, found $found")
+                                    else throw Exception(s"Object $id expected type $t, found $found")
                                 case Implementation.Unimplemented(t) => throw Exception(s"Object field $id unimplemented")
                             }
                         )
