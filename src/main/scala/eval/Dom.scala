@@ -27,16 +27,12 @@ def constructDefinition(d: Definition, tenv: TypeEnv): IDType =
     d match {
         case ClassDef(name, relations, fields) =>
             val (data, methods) = constructFields(relations, fields, tenv)
-            val parents : Seq[Type] = relations.filter(_.isInstanceOf[Extends]).map(r => getRelationType(r, tenv)).flatten
-            val interfaces : Seq[Type] = relations.filter(_.isInstanceOf[Implements]).map(r => getRelationType(r, tenv)).flatten
-            val refined_parents : Seq[ClassType] = parents.map(refineToClass)
-            val refined_interfaces : Seq[InterfaceType] = interfaces.map(refineToInterface)
-            ClassType(name, data, methods, refined_parents, refined_interfaces)
+            val parents = relations.map(r => getRelationType(r, tenv)).flatten
+            ClassType(name, data, methods, parents)
         case InterfaceDef(name, relations, fields) =>
             val parents = relations.filter(_.isInstanceOf[Extends]).map(r => getRelationType(r, tenv)).flatten
             val (data, methods) = constructFields(relations, fields, tenv)
-            val refined_parents : Seq[InterfaceType] = parents.map(refineToInterface)
-            InterfaceType(name, data, methods, refined_parents)
+            InterfaceType(name, data, methods, parents)
     }
 
 def constructFields(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv):

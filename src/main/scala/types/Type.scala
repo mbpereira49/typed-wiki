@@ -4,6 +4,7 @@ import parse.ast.Identifier
 
 sealed trait Type:
     val methods: Map[Identifier, Implementation]
+    val parents: Seq[Type] = Seq()
 sealed trait IDType extends Type:
     val id: Identifier
     override def toString = id.toString
@@ -15,13 +16,12 @@ class ClassType(
     val id: Identifier, 
     val data: Map[Identifier, Implementation], 
     val methods: Map[Identifier, Implementation],
-    val parents: Seq[ClassType],
-    val interfaces: Seq[InterfaceType]) extends IDType, StateType
+    override val parents: Seq[Type]) extends IDType, StateType
 class InterfaceType(
     val id: Identifier, 
     val data: Map[Identifier, types.Implementation], 
     val methods: Map[Identifier, Implementation],
-    val parents: Seq[InterfaceType]) extends IDType, StateType
+    override val parents: Seq[Type]) extends IDType, StateType
 
 class ListType(t: Type) extends Type:
     val methods = Map()

@@ -8,7 +8,7 @@ class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
         s match
             case Subst(l : List[ObjectDeclaration]) => l.map(evalObjectDeclaration)
         env.mapping.map((id, o) =>
-            if !(env.typeMapping(id) eq tenv.mapping(Identifier("Page"))) then () 
+            if !isSubtype(env.typeMapping(id),tenv.mapping(Identifier("Page"))) then () 
             else
                 val expr_string = "self.render_full()"
                 val expr_parsed = parse.expr.parse(expr_string)
@@ -36,7 +36,7 @@ class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
             case ObjectDeclaration(id: Identifier, t: parse.ast.Type, c: Construction) =>
                 val obj: types.Object = evalConstruction(c)
                 val decl_t : types.Type = types.getType(t, tenv)
-                if isSubtype(obj.t, decl_t) | true then 
+                if isSubtype(obj.t, decl_t) then 
                     env.add(id, obj, decl_t)
                 else 
                     val found_t = obj.t
@@ -68,5 +68,4 @@ class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
                 }
 
 def isSubtype(lower: types.Type, upper: types.Type): Boolean =
-    // Need to change to do subtyping!
-    lower eq upper
+    (lower eq upper) | lower.parents.map(p => isSubtype(p, upper)).exists(b => b)

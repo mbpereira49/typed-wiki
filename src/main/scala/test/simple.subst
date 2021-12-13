@@ -1,2 +1,2 @@
 date: Date = Date(day = 12, month = 12, year = 2021)
-note: Page = PLNotes(raw_notes = "hey there", date = date)
+note: PLNotes = PLNotes(raw_notes = "can i subtype?", date = date)
