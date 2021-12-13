@@ -1,6 +1,8 @@
 import cats.parse.Parser0
 
 import parse.ast.*
+import parse.*
+import io.*
 
 val filename = "simple"
 
@@ -11,7 +13,7 @@ val fileOut = s"$dir/out/$filename.html"
 def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): Unit =
     val raw = read(fileIn)
     val parsed = p.parse(raw)
-    write(parsed, fileOut)
+    //write(parsed, fileOut)
 
 @main def main =
     parse_and_generate(template, fileIn, fileOut)

@@ -1,3 +1,5 @@
+package parse
+
 import cats.parse.Rfc5234.{alpha, sp, vchar, wsp, lf}
 import cats.parse.{Parser => P, Parser0}
 import cats.parse.Parser.not

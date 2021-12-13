@@ -1,3 +1,5 @@
+package parse
+
 import cats.parse.Rfc5234.{alpha, sp, char, wsp, lf, digit, cr, dquote, vchar}
 import cats.parse.{Parser => P, Parser0 => P0}
 import cats.data.NonEmptyList

@@ -1,3 +1,5 @@
+package io
+
 import scala.io.Source
 import java.io._
 import cats.parse.Parser
@@ -14,7 +16,7 @@ def write(parsed: Either[Parser.Error, Tuple2[String, Template]], fileOut: Strin
   parsed match {
       case Right(x) => 
         val body = x._2
-        val out = generate(body)
+        val out = generate.generate(body)
         write_html(out, fileOut)
       case Left(x) => println(x)
   }

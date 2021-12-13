@@ -1,3 +1,5 @@
+package parse
+
 import cats.parse.Rfc5234.{lf}
 import cats.parse.{Parser => P, Parser0 => P0}
 

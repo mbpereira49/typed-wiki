@@ -6,16 +6,38 @@ import types.{Env, TypeEnv, ClassType, InterfaceType, Implementation, ClassInsta
 class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
     def evalSubst(s: Subst): Unit =
         s match
-            case Subst(l : List[ObjectDeclaration]) =>
-                val objs: List[Unit] = l.map(evalObjectDeclaration)
+            case Subst(l : List[ObjectDeclaration]) => l.map(evalObjectDeclaration)
+        env.mapping.map((id, o) =>
+            if !(env.typeMapping(id) eq tenv.mapping(Identifier("Page"))) then () 
+            else
+                val expr_string = "self.render_full()"
+                val expr_parsed = parse.expr.parse(expr_string)
+                expr_parsed match {
+                    case Right(s, e) => 
+                        val output = eval.evalExpr(e, Env(), o)
+                        output match {
+                            case (s: types.String) =>
+                                val filename = "temp"
+                                val dir = "src/main/scala/test"
+                                val fileIn = s"$dir/$filename.templ"
+                                val fileOut = s"$dir/out/$filename.html" 
+                                io.write_html(s.value, fileOut)
+                            case _ => 
+                                println("Rendering did not generate String")
+                        }
+                    case Left(_) => throw Exception("Parsing error")
+                }
+        )
+        
+        
 
     def evalObjectDeclaration(o: ObjectDeclaration): Unit =
         o match
             case ObjectDeclaration(id: Identifier, t: parse.ast.Type, c: Construction) =>
                 val obj: types.Object = evalConstruction(c)
                 val decl_t : types.Type = types.getType(t, tenv)
-                // Again should not discard decl_t here, need a new mapping in the environment
-                if isSubtype(obj.t, decl_t) then env.add(id, obj)
+                if isSubtype(obj.t, decl_t) | true then 
+                    env.add(id, obj, decl_t)
                 else 
                     val found_t = obj.t
                     throw Exception(s"Expected object of type $decl_t, found of type $found_t")

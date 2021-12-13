@@ -6,9 +6,12 @@ import scala.collection.mutable
 
 def initializeTenv(): TypeEnv =
     val tenv = TypeEnv()
+    tenv.addType(types.Unit.t)
     tenv.addType(types.String.t)
     tenv.addType(types.Int.t)
-    tenv.addType(types.Unit.t)
+    tenv.addType(types.Class.t)
+    tenv.addType(types.Template.t)
+    tenv.addType(types.STL.t)
     tenv
 
 def evalDom(d: Domain): TypeEnv =

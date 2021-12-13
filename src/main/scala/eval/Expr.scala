@@ -26,6 +26,7 @@ def evalVar(id : Identifier, env: Env, self: Object): Object =
     if env.mapping contains id then env.mapping(id)
     else id match
         case Identifier("self") => self
+        case Identifier("stl") => types.STL()
         case Identifier(s) => 
             throw Exception(s"Variable $s is undefined")
 
