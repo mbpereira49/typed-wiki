@@ -8,18 +8,19 @@ def initializeTenv(): TypeEnv =
     val tenv = TypeEnv()
     tenv.addType(types.String.t)
     tenv.addType(types.Int.t)
+    tenv.addType(types.Unit.t)
     tenv
 
-def evalDom(d: Domain, env: Env): TypeEnv =
+def evalDom(d: Domain): TypeEnv =
     val tenv = initializeTenv()
     d match
         case Domain(l) => 
             for definition <- l do 
-                val t = constructDefinition(definition, env, tenv)
+                val t = constructDefinition(definition, tenv)
                 tenv.addType(t)
     tenv
 
-def constructDefinition(d: Definition, env: Env, tenv: TypeEnv): IDType = 
+def constructDefinition(d: Definition, tenv: TypeEnv): IDType = 
     d match {
         case ClassDef(name, relations, fields) =>
             val (data, methods) = constructFields(relations, fields, tenv)
@@ -56,27 +57,27 @@ def constructFields(relations: Seq[Relation], fields: Seq[Field], tenv: TypeEnv)
     do field match {
         case Data(m) => 
             val type_map = m.map((id, t) =>
-                val c = getType(t, tenv)
+                val c = types.getType(t, tenv)
                 id -> types.Implementation.Unimplemented(c)
             )
             data++= type_map
         case Methods(m) =>
             val type_map = m.map((id, t) =>
-                val c = getType(t, tenv)
+                val c = types.getType(t, tenv)
                 id -> types.Implementation.Unimplemented(c)
             )
             methods ++= type_map
         case Assignment(id, expr) =>
             if data contains id then
-                val t = types.getType(data(id))
-                val obj = types.LazyObject(expr)
+                val t = types.getImplementationType(data(id))
+                val obj = eval.evalExpr(expr, Env())
                 val impl = types.Implementation.Implemented(t, obj)
                 data += (id -> impl)
             else throw Exception(s"Cannot assign undeclared variable $id")
         case Implementation(id, args, expr) => 
             if methods contains id then
-                val t = types.getType(methods(id))
-                val arg_map = args.map((id, t) => id -> getType(t, tenv))
+                val t = types.getImplementationType(methods(id))
+                val arg_map = args.map((id, t) => id -> types.getType(t, tenv))
                 val obj = types.Method(arg_map, expr)
                 val impl = types.Implementation.Implemented(t, obj)
                 data += (id -> impl)
@@ -91,24 +92,6 @@ def getRelationType(r: Relation, tenv: TypeEnv): Option[Type] =
     }
     if tenv.mapping contains id then Some(tenv.mapping(id))
     else None
-
-def getType(t: parse.ast.Type, tenv: TypeEnv): types.Type =
-    t match {
-        case parse.ast.Type.Identifier(s) => 
-            val id = Identifier(s)
-            if tenv.mapping contains id then tenv.mapping(id) 
-            else throw Exception(s"Type $id not defined")
-        case parse.ast.Type.ListType(t) =>
-            val c = getType(t, tenv)
-            types.ListType(c)
-        case parse.ast.Type.MapType(t1, t2) =>
-            val c1 = getType(t1, tenv)
-            val c2 = getType(t2, tenv)
-            types.MapType(c1, c2)
-        case parse.ast.Type.TupleType(ts) =>
-            val cs = ts.map(t => getType(t, tenv))
-            types.TupleType(cs)
-    }
 
 def refineToClass(s: Type): ClassType =
     s match {
