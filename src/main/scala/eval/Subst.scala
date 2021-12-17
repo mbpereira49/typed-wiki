@@ -17,7 +17,7 @@ class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
                         val output = eval.evalExpr(e, Env(), o)
                         output match {
                             case (s: types.String) =>
-                                val filename = "temp"
+                                val filename = "simple"
                                 val dir = "src/main/scala/test"
                                 val fileIn = s"$dir/$filename.templ"
                                 val fileOut = s"$dir/out/$filename.html" 
