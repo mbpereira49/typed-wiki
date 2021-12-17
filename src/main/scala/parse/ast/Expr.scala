@@ -17,7 +17,7 @@ enum Expr:
   case Access(e: Expr, a: Attribute)
 
 enum Type:
-  case Identifier(s: String)
+  case Base(id: Identifier)
   case ListType(t: Type)
   case MapType(from: Type, to: Type)
   case TupleType(ts: List[Type])

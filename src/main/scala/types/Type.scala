@@ -33,8 +33,7 @@ class TupleType(ts: List[Type]) extends Type:
 
 def getType(t: parse.ast.Type, tenv: TypeEnv): types.Type =
     t match {
-        case parse.ast.Type.Identifier(s) => 
-            val id = Identifier(s)
+        case parse.ast.Type.Base(id) => 
             if tenv.mapping contains id then tenv.mapping(id) 
             else throw Exception(s"Type $id not defined")
         case parse.ast.Type.ListType(t) =>

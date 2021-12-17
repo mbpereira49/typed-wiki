@@ -5,9 +5,9 @@ import cats.parse.{Parser => P, Parser0 => P0}
 
 import parse.ast.*
 
-val argument: P[(Identifier, Expr)] = identifier + (equals >> expr)
+val argument: P[(Identifier, Expr)] = id + (equals >> expr)
 val argument_map : P0[Map[Identifier, Expr]] = list(argument).map(l => l.toMap)
-val construction : P[Construction] = (identifier ~ (leftParen >> argument_map << rightParen)).map(x => 
+val construction : P[Construction] = (id ~ (leftParen >> argument_map << rightParen)).map(x => 
     x match
         case (id: Identifier, args: Map[Identifier, Expr]) => Construction(id, args)
 )

@@ -14,10 +14,19 @@ def nest_attributes(e: Expr, l: NonEmptyList[Attribute]): Expr.Access =
     }
   
 val expr: P[Expr] = P.recursive[Expr] { recurse =>
+
+  val number: P[Lit] = digit.rep.string.map(s => Lit.Number(s.toInt))
+  val string: P[Lit] = {
+    val escape: P[String] = P.string("\\\"").string.as("\"")
+    val valid_char: P[String] = 
+      escape.backtrack
+      | char.string
+    (dquote *> valid_char.repUntil0(dquote).map(_.mkString) <* dquote).map(s => Lit.Str(s))
+  }
   val literal: P[Expr.Literal] = (number | string).map(Expr.Literal(_))
-  val variable = identifier.map(Expr.Var(_))
-  val property: P[Attribute] = identifier.map(Attribute.Property(_))
-  val method: P[Attribute] = (identifier ~ (leftParen >> list(recurse) << rightParen))
+  val variable = id.map(Expr.Var(_))
+  val property: P[Attribute] = id.map(Attribute.Property(_))
+  val method: P[Attribute] = (id ~ (leftParen >> list(recurse) << rightParen))
     .map(x => x match
       case (id: Identifier, e: List[Expr]) => Attribute.Method(id, e))
   val attribute: P[Attribute] = method.backtrack | property
