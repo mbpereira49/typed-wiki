@@ -57,6 +57,6 @@ object EvalSubst:
         val expr_string = "self.render_full()"
         eval.evalExprString(expr_string, Env(), obj)
     
-    def generateLink(obj: types.Object): types.Object =
-        val expr_string = "self.link()"
+    def generatePath(obj: types.Object): types.Object =
+        val expr_string = "self.path()"
         eval.evalExprString(expr_string, Env(), obj)

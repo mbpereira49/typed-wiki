@@ -6,28 +6,25 @@ import io.*
 
 val dir = "src/main/scala/test"
 
-val filenameDom = "simple"
-val filenameSubst = "simple"
-
 def writePage(page: types.Object): Unit = 
-
-    val link = eval.EvalSubst.generateLink(page)
-    val filename = link match {
-        case (s: types.String) => s.value
+    val path = eval.EvalSubst.generatePath(page)
+    val filename = path match {
+        case (path: types.String) => path.value
         case _ => throw Exception("Link for page is not of type String")
     }
+
     val html = eval.EvalSubst.generateHTML(page)
     html match {
-        case (s: types.String) =>
+        case (html: types.String) =>
             val fileOut = s"$dir/out/$filename.html"
-            io.write_html(s.value, fileOut)
+            io.write_html(html.value, fileOut)
         case _ => 
             println("Rendering did not generate String")
     }
 
-@main def main =
-    val domainFile = read(s"$dir/$filenameDom.dom")
-    val substFile = read(s"$dir/$filenameSubst.subst")
+@main def main(filenameDom: String, filenameSubst: String) =
+    val domainFile = read(s"$dir/$filenameDom")
+    val substFile = read(s"$dir/$filenameSubst")
     val parsedDomain = domain.parse(domainFile)
     val parsedSubst = subst.parse(substFile)
     parsedDomain match {

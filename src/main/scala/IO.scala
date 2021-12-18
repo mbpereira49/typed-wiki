@@ -23,5 +23,7 @@ def write(parsed: Either[Parser.Error, Tuple2[String, Template]], fileOut: Strin
 
 def write_html(out: String, fileOut: String): Unit = 
   val file = new File(fileOut)
+  val dir = new File(file.getParent())
+  dir.mkdirs()
   val bw = new BufferedWriter(new FileWriter(file))
   try bw.write(out) finally bw.close()
