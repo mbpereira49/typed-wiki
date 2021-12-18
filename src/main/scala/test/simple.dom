@@ -35,7 +35,7 @@ class Notes implements TemplatedPage = [
         course: String,
         raw_notes: String
     ],
-    let title() = self.course + "(" + self.date.string() + ")",
+    let title() = self.course + " (" + self.date.string() + ")",
     let path() = self.course + "/" + self.date.string(),
     let template() = stl.read_template("src/main/scala/test/simple.templ")
 ]

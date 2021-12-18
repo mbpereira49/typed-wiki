@@ -17,7 +17,7 @@ val expr: P[Expr] = P.recursive[Expr] { recurse =>
 
   val number: P[Lit] = digit.rep.string.map(s => Lit.Number(s.toInt))
   val string: P[Lit] = {
-    val escape: P[String] = P.string("\\\"").string.as("\"")
+    val escape: P[String] = P.string("\\\"").string.as("\"") | P.string("\\n").string.as("\n")
     val valid_char: P[String] = 
       escape.backtrack
       | char.string
