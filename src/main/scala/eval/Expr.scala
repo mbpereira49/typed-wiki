@@ -3,6 +3,13 @@ package eval
 import parse.ast.{Expr, Lit, Attribute, Identifier}
 import types.{Env, Object, Function, Property, Implementation, Type}
 
+def evalExprString(e_string: String, env: Env, self: Object = null): Object = 
+    val parsed = parse.expr.parseAll(e_string)
+    parsed match {
+        case Right(e) => eval.evalExpr(e, Env(), self)
+        case Left(_) => throw Exception("Parsing error")
+    }
+
 def evalExpr(e: Expr, env: Env, self: Object = null): Object =
     e match {
         case Expr.Plus(e1, e2) =>

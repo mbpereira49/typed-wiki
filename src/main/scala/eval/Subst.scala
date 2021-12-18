@@ -4,32 +4,14 @@ import parse.ast.{Subst, ObjectDeclaration, Construction, Identifier, Expr}
 import types.{Env, TypeEnv, ClassType, InterfaceType, Implementation, ClassInstance}
 
 class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
+    def getPages(): Iterable[types.Object] =
+        env.mapping.filter((id, o) => 
+            isSubtype(env.typeMapping(id), tenv.mapping(Identifier("Page"))))
+        .map((id, o) => o)
+
     def evalSubst(s: Subst): Unit =
         s match
             case Subst(l : List[ObjectDeclaration]) => l.map(evalObjectDeclaration)
-        env.mapping.map((id, o) =>
-            if !isSubtype(env.typeMapping(id),tenv.mapping(Identifier("Page"))) then () 
-            else
-                val expr_string = "self.render_full()"
-                val expr_parsed = parse.expr.parse(expr_string)
-                expr_parsed match {
-                    case Right(s, e) => 
-                        val output = eval.evalExpr(e, Env(), o)
-                        output match {
-                            case (s: types.String) =>
-                                val filename = "simple"
-                                val dir = "src/main/scala/test"
-                                val fileIn = s"$dir/$filename.templ"
-                                val fileOut = s"$dir/out/$filename.html" 
-                                io.write_html(s.value, fileOut)
-                            case _ => 
-                                println("Rendering did not generate String")
-                        }
-                    case Left(_) => throw Exception("Parsing error")
-                }
-        )
-        
-        
 
     def evalObjectDeclaration(o: ObjectDeclaration): Unit =
         o match
@@ -69,3 +51,12 @@ class EvalSubst(val tenv: TypeEnv, var env: Env = Env()):
 
 def isSubtype(lower: types.Type, upper: types.Type): Boolean =
     (lower eq upper) | lower.parents.map(p => isSubtype(p, upper)).exists(b => b)
+
+object EvalSubst:
+    def generateHTML(obj: types.Object): types.Object = 
+        val expr_string = "self.render_full()"
+        eval.evalExprString(expr_string, Env(), obj)
+    
+    def generateLink(obj: types.Object): types.Object =
+        val expr_string = "self.link()"
+        eval.evalExprString(expr_string, Env(), obj)

@@ -4,34 +4,45 @@ import parse.ast.*
 import parse.*
 import io.*
 
-val filename = "simple"
-
 val dir = "src/main/scala/test"
-val fileIn = s"$dir/$filename.templ"
-val fileOut = s"$dir/out/$filename.html" 
 
-def parse_and_generate(p: Parser0[Template], fileIn: String, fileOut: String): Unit =
-    val raw = read(fileIn)
-    val parsed = p.parse(raw)
-    //write(parsed, fileOut)
+val filenameDom = "simple"
+val filenameSubst = "simple"
+
+def writePage(page: types.Object): Unit = 
+
+    val link = eval.EvalSubst.generateLink(page)
+    val filename = link match {
+        case (s: types.String) => s.value
+        case _ => throw Exception("Link for page is not of type String")
+    }
+    val html = eval.EvalSubst.generateHTML(page)
+    html match {
+        case (s: types.String) =>
+            val fileOut = s"$dir/out/$filename.html"
+            io.write_html(s.value, fileOut)
+        case _ => 
+            println("Rendering did not generate String")
+    }
 
 @main def main =
-    parse_and_generate(template, fileIn, fileOut)
-    val domain_file = read("src/main/scala/test/simple.dom")
-    val subst_file = read("src/main/scala/test/simple.subst")
-    val parsed_domain = domain.parse(domain_file)
-    val parsed_subst = subst.parse(subst_file)
-    parsed_domain match {
+    val domainFile = read(s"$dir/$filenameDom.dom")
+    val substFile = read(s"$dir/$filenameSubst.subst")
+    val parsedDomain = domain.parse(domainFile)
+    val parsedSubst = subst.parse(substFile)
+    parsedDomain match {
         case Right(s, d) => 
             if !(s.isEmpty) then println(s"Unparsed: $s")
             else
                 val tenv = eval.evalDom(d)
-                parsed_subst match {
+                parsedSubst match {
                     case Right(s, sub) => 
                         if !(s.isEmpty) then println(s"Unparsed: $s")
                         else
                             val e = eval.EvalSubst(tenv)
                             e.evalSubst(sub)
+                            val pages: Iterable[types.Object] = e.getPages()
+                            pages.foreach(writePage)
                     case Left(err) => println(err)
                 }
         case Left(err) => println(err)
