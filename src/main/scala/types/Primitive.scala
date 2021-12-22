@@ -67,7 +67,7 @@ object Template:
     val generate_method = NativeFunction(self => objs =>
         (self, objs) match {
             case (_, Nil) => throw Exception("generate requires an object")
-            case (self: types.Template, (obj : types.Object) :: Nil) => types.String(generate.generate(self.value, obj))
+            case (self: types.Template, (obj : types.Object) :: Nil) => types.String(generate.generateHTML(self.value, obj))
             case _ => throw Exception("Too many arguments")
         },
         MapType(types.Class.t, String.t)

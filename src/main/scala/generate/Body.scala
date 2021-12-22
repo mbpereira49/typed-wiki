@@ -2,10 +2,12 @@ package generate
 
 import parse.ast.*
 
-def generate(s: Template, obj: types.Object = null): String = s match
+def generateBody(s: Template, obj: types.Object): String = s match
   case Template(l) => 
     if l.isEmpty then ""
-    else l.map(b => generateBlock(b, obj)).flatten.reduce((x, y) => s"$x\n$y")
+    else 
+      l.map(b => generateBlock(b, obj)).flatten.reduce((x, y) => s"$x\n$y")
+
 
 def generateBlock(b : Block, obj: types.Object): Option[String] =
   b match {

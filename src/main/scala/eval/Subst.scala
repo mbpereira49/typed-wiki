@@ -53,10 +53,17 @@ def isSubtype(lower: types.Type, upper: types.Type): Boolean =
     (lower eq upper) | lower.parents.map(p => isSubtype(p, upper)).exists(b => b)
 
 object EvalSubst:
-    def generateHTML(obj: types.Object): types.Object = 
+    def generateHTML(obj: types.Object): String = 
         val expr_string = "self.render_full()"
-        eval.evalExprString(expr_string, Env(), obj)
+        val html = eval.evalExprString(expr_string, Env(), obj)
+        extractString(html)
     
-    def generatePath(obj: types.Object): types.Object =
+    def generatePath(obj: types.Object): String =
         val expr_string = "self.path()"
-        eval.evalExprString(expr_string, Env(), obj)
+        val path = eval.evalExprString(expr_string, Env(), obj)
+        extractString(path)
+
+    private def extractString(obj: types.Object): String =
+        obj match
+            case (obj: types.String) => obj.value
+            case _ => throw Exception("Link for page is not of type String")
