@@ -2,11 +2,11 @@ package io
 
 import scala.io.Source
 import java.io.*
-import java.nio.file.{Files, StandardCopyOption}
+import java.nio.file.{Files, StandardCopyOption, FileSystems}
 
 def read(fileIn: String): String =
   val bufferedSource = Source.fromFile(fileIn)
-  val fileContents = bufferedSource.getLines mkString "\n"
+  val fileContents = bufferedSource.getLines.mkString("\n")
   bufferedSource.close
   fileContents
 

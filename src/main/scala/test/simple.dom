@@ -35,9 +35,13 @@ class Notes implements TemplatedPage = [
         course: String,
         raw_notes: String
     ],
-    let title() = self.course + " (" + self.date.string() + ")",
+    let title() = self.date.string(),
     let path() = self.course + "/" + self.date.string(),
-    let template() = stl.read_template("src/main/scala/test/simple.templ")
+    let template() = stl.read_template("src/main/scala/test/notes.templ")
 ]
 
-class PLNotes extends Notes = [let course = "252r"]
+class PLNotes extends Notes = [
+    data = [summary: String],
+    let course = "252r",
+    let template() = stl.read_template("src/main/scala/test/plnotes.templ")
+]

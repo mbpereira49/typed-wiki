@@ -11,6 +11,8 @@ def generateHTML(s: Template, obj: types.Object = null): String =
         $head
       </head>
       <body>
+        <article class="markdown-body">
         $body
+        </article>
       </body>
   </html>"""

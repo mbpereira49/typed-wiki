@@ -17,7 +17,7 @@ def run(baseDir: String, filenameDom: String, filenameSubst: String): Unit =
 
     val outDir = s"$baseDir/out"
     e.getPages().foreach(p => writePage(p, outDir))
-    writeCSS(outDir)
+    //writeCSS(outDir)
 
 private def writePage(page: types.Object, outDir: String): Unit = 
     val path = eval.EvalSubst.generatePath(page)
@@ -26,7 +26,7 @@ private def writePage(page: types.Object, outDir: String): Unit =
     io.write_html(html, fileOut)
 
 private def writeCSS(outDir: String): Unit =
-    val cssFiles = generate.getCSSFiles
+    val cssFiles = config.getCSSFiles
     cssFiles.foreach(f => io.copy(f, s"$outDir/css"))
 
 private def extractDomain[A](e: Either[cats.parse.Parser.Error, A]): A =
