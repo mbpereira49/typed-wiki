@@ -1,2 +1,2 @@
 date: Date = Date(day = 12, month = 12, year = 2021)
-note: PLNotes = PLNotes(raw_notes = "Some notes to demonstrate the framework.", summary = "A student presents on TypeWiki.", date = date)
+note: PLNotes = PLNotes(raw_notes = "Some notes to demonstrate the framework.", summary = "Jack student presents on TypeWiki.", date = date)

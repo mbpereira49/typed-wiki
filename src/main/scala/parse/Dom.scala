@@ -13,7 +13,7 @@ val declaration_list: P[List[(Identifier, Type)]] = bracket_list(declaration)
 val data: P[Data] = (P.string("data") >> (equals >> declaration_list)).map(l => Data(l.toMap))
 val methods: P[Methods] = (P.string("methods") >> (equals >> declaration_list)).map(l => Methods(l.toMap))
 
-val let_method: P[Field] = ((P.string("let") >> (id ~ paren_list(declaration))) + (equals >> expr))
+val def_method: P[Field] = ((P.string("def") >> (id ~ paren_list(declaration))) + (equals >> expr))
   .map(x => x match
     case ((id: Identifier, args: List[(Identifier, Type)]), e: Expr) => Implementation(id, args.toMap, e))
 
@@ -21,7 +21,7 @@ val let_data: P[Field] = ((P.string("let") >> id) + (equals >> expr))
   .map(x => x match
     case (id: Identifier, e: Expr) => Assignment(id, e))
 
-val field: P[Field] = data | methods | let_method.backtrack | let_data
+val field: P[Field] = data | methods | def_method | let_data
 val fields: P[List[Field]] = bracket_list(field)
 
 val extend: P[List[Relation]] = (P.string("extends") >> list(id)).map(l => l.map(s => Extends(s)))

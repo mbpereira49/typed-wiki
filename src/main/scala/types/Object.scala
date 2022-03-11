@@ -5,6 +5,9 @@ import parse.ast.{Identifier, Expr}
 trait Object:
     val t: Type
 
+trait Callable extends Object:
+    def call(objs: List[Object], env: Env, self: Object): Object
+
 trait Property:
     val properties: Map[Identifier, Object]
 

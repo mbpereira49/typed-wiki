@@ -32,7 +32,7 @@ def evalLiteral(l : Lit): Object =
 def evalVar(id : Identifier, env: Env, self: Object): Object = 
     if env.mapping contains id then env.mapping(id)
     else id match
-        case Identifier("self") => self
+        case Identifier("this") => self
         case Identifier("stl") => types.STL()
         case Identifier(s) => 
             throw Exception(s"Variable $s is undefined")
@@ -50,7 +50,7 @@ def evalAccess(obj: Object, a: Attribute, env: Env, self: Object): Object =
             f match {
                 case Implementation.Implemented(t, f) => f match {
                     case (f : Function) => 
-                        f.run(obj)(env)(eval_args)
+                        f.call(obj)(env)(eval_args)
                     case _ => throw Exception("Can't call non-method")
                 }
                 case Implementation.Unimplemented(_) => throw Exception(s"Method $id not implemented")

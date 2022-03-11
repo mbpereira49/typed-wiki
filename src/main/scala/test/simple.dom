@@ -16,17 +16,17 @@ interface Linkable = [
 
 interface Page extends Generate, Linkable = [
     methods = [title: Unit => String],
-    let render_inline() = "<a href=" + link + ">" + self.title + "</a>"
+    def render_inline() = "<a href=" + link + ">" + this.title + "</a>"
 ]
 
 interface TemplatedPage extends Page = [
     methods = [template: Unit => Template],
-    let render_full() = self.template().generate(self)
+    def render_full() = this.template().generate(this)
 ]
 
 class Date implements Printable = [
     data = [day: Int, month: Int, year: Int],
-    let string() = self.month.string() + "-" + self.day.string() + "-" + self.year.string()
+    def string() = this.month.string() + "-" + this.day.string() + "-" + this.year.string()
 ]
 
 class Notes implements TemplatedPage = [
@@ -35,13 +35,13 @@ class Notes implements TemplatedPage = [
         course: String,
         raw_notes: String
     ],
-    let title() = self.date.string(),
-    let path() = self.course + "/" + self.date.string(),
-    let template() = stl.read_template("src/main/scala/test/notes.templ")
+    def title() = this.date.string(),
+    def path() = this.course + "/" + this.date.string(),
+    def template() = stl.read_template("src/main/scala/test/notes.templ")
 ]
 
 class PLNotes extends Notes = [
     data = [summary: String],
     let course = "252r",
-    let template() = stl.read_template("src/main/scala/test/plnotes.templ")
+    def template() = stl.read_template("src/main/scala/test/plnotes.templ")
 ]

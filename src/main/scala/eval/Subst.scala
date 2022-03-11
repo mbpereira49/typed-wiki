@@ -54,12 +54,12 @@ def isSubtype(lower: types.Type, upper: types.Type): Boolean =
 
 object EvalSubst:
     def generateHTML(obj: types.Object): String = 
-        val expr_string = "self.render_full()"
+        val expr_string = "this.render_full()"
         val html = eval.evalExprString(expr_string, Env(), obj)
         extractString(html)
     
     def generatePath(obj: types.Object): String =
-        val expr_string = "self.path()"
+        val expr_string = "this.path()"
         val path = eval.evalExprString(expr_string, Env(), obj)
         extractString(path)
 
